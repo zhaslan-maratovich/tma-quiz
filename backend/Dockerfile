@@ -13,8 +13,8 @@ COPY prisma ./prisma/
 # Устанавливаем зависимости (включая devDependencies)
 RUN npm ci
 
-# Генерируем Prisma Client
-RUN npx prisma@5 generate
+# Генерируем Prisma Client (используем установленный из package.json)
+RUN npx prisma generate
 
 # Копируем исходный код
 COPY . .
@@ -37,7 +37,9 @@ RUN npm ci --omit=dev
 # Копируем Prisma schema (нужен для runtime)
 COPY prisma ./prisma/
 
-RUN npx prisma@5 generate
+# Копируем сгенерированный Prisma Client из builder стадии
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 
 # Копируем собранное приложение
 COPY --from=builder /app/dist ./dist
