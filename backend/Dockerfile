@@ -10,11 +10,11 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Устанавливаем зависимости
+# Устанавливаем зависимости (включая devDependencies)
 RUN npm ci
 
 # Генерируем Prisma Client
-RUN npx prisma generate
+RUN npx prisma@5 generate
 
 # Копируем исходный код
 COPY . .
@@ -27,16 +27,17 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Устанавливаем OpenSSL для Prisma
+# Устанавливаем OpenSSL для Prisma runtime
 RUN apk add --no-cache openssl
 
 # Устанавливаем только production зависимости
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-# Копируем Prisma schema и генерируем client
+# Копируем Prisma schema (нужен для runtime)
 COPY prisma ./prisma/
-RUN npx prisma generate
+
+RUN npx prisma@5 generate
 
 # Копируем собранное приложение
 COPY --from=builder /app/dist ./dist
