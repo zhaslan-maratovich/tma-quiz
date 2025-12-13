@@ -13,8 +13,8 @@ COPY prisma ./prisma/
 # Устанавливаем зависимости (включая devDependencies)
 RUN npm ci
 
-# Генерируем Prisma Client (используем установленный из package.json)
-RUN npx prisma generate
+# Генерируем Prisma Client (используем установленный prisma из node_modules)
+RUN ./node_modules/.bin/prisma generate
 
 # Копируем исходный код
 COPY . .
