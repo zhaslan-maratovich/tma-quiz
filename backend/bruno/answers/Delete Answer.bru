@@ -1,0 +1,19 @@
+meta {
+  name: Delete Answer
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/answers/:answerId
+  body: none
+  auth: none
+}
+
+params:path {
+  answerId: <answer-uuid-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Publish Test
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/tests/:testId/publish
+  body: none
+  auth: none
+}
+
+params:path {
+  testId: <test-uuid-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+}

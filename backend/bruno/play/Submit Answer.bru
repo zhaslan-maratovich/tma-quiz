@@ -1,0 +1,27 @@
+meta {
+  name: Submit Answer
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/play/:slug/submit
+  body: json
+  auth: none
+}
+
+params:path {
+  slug: <test-slug-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "questionId": "<question-uuid>",
+    "answerId": "<answer-uuid>"
+  }
+}

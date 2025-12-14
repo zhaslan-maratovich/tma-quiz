@@ -1,0 +1,27 @@
+meta {
+  name: Add Answer
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/questions/:questionId/answers
+  body: json
+  auth: none
+}
+
+params:path {
+  questionId: <question-uuid-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "text": "Новый вариант ответа",
+    "isCorrect": false
+  }
+}

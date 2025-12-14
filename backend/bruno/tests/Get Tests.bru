@@ -1,0 +1,15 @@
+meta {
+  name: Get Tests
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/tests
+  body: none
+  auth: none
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Update Test
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/tests/:testId
+  body: json
+  auth: none
+}
+
+params:path {
+  testId: <test-uuid-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "welcomeScreen": {
+      "title": "Обновлённое название",
+      "description": "Новое описание"
+    },
+    "allowRetake": true
+  }
+}

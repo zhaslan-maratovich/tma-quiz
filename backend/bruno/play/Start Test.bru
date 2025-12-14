@@ -1,0 +1,19 @@
+meta {
+  name: Start Test
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/play/:slug/start
+  body: none
+  auth: none
+}
+
+params:path {
+  slug: <test-slug-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+}

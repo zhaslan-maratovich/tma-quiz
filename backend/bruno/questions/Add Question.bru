@@ -1,0 +1,31 @@
+meta {
+  name: Add Question
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/tests/:testId/questions
+  body: json
+  auth: none
+}
+
+params:path {
+  testId: <test-uuid-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "text": "Какой столицей является Москва?",
+    "answers": [
+      { "text": "России", "isCorrect": true },
+      { "text": "Украины", "isCorrect": false },
+      { "text": "Беларуси", "isCorrect": false }
+    ]
+  }
+}

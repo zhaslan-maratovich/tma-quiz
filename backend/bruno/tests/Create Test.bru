@@ -1,0 +1,27 @@
+meta {
+  name: Create Test
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/tests
+  body: json
+  auth: none
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "type": "quiz",
+    "welcomeScreen": {
+      "title": "Мой новый тест",
+      "description": "Описание теста",
+      "buttonText": "Начать"
+    }
+  }
+}

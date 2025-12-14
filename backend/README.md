@@ -24,12 +24,29 @@ npm install                    # Установить зависимости
 cp env.example .env            # Скопировать переменные окружения
 docker-compose up -d           # Поднять PostgreSQL + Redis
 npm run prisma:push            # Применить схему БД
+npm run prisma:seed            # Создать тестового пользователя
 npm run dev                    # Запустить dev сервер
 
 # Ежедневная работа
 docker-compose up -d           # Если контейнеры остановлены
 npm run dev                    # Запустить сервер
 ```
+
+### Тестирование API (Bruno / cURL)
+
+В `development` режиме можно использовать заголовок `X-Dev-User-Id` вместо Telegram initData:
+
+```bash
+# cURL примеры
+curl -H "X-Dev-User-Id: 123456789" http://localhost:3000/api/tests
+curl -X POST -H "X-Dev-User-Id: 123456789" -H "Content-Type: application/json" \
+  -d '{"type":"quiz","welcomeScreen":{"title":"Мой тест"}}' \
+  http://localhost:3000/api/tests
+```
+
+**Bruno:** Открой папку `bruno/` в Bruno — там готовая коллекция запросов.
+
+> ⚠️ `X-Dev-User-Id` работает **только** при `NODE_ENV=development`
 
 ### Деплой на VPS (Production)
 
@@ -76,6 +93,7 @@ docker compose -f docker-compose.prod.yml restart app     # Перезапуск
 | `npm run prisma:push`     | Применение схемы к БД              |
 | `npm run prisma:migrate`  | Создание и применение миграций     |
 | `npm run prisma:studio`   | Открыть Prisma Studio (GUI для БД) |
+| `npm run prisma:seed`     | Создать тестовые данные            |
 | `npm run typecheck`       | Проверка типов без компиляции      |
 
 ---

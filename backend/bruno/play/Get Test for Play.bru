@@ -1,0 +1,19 @@
+meta {
+  name: Get Test for Play
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/play/:slug
+  body: none
+  auth: none
+}
+
+params:path {
+  slug: <test-slug-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Update Answer
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{baseUrl}}/api/answers/:answerId
+  body: json
+  auth: none
+}
+
+params:path {
+  answerId: <answer-uuid-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "text": "Обновлённый текст ответа",
+    "isCorrect": true
+  }
+}

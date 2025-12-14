@@ -1,0 +1,19 @@
+meta {
+  name: Get Test by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/tests/:testId
+  body: none
+  auth: none
+}
+
+params:path {
+  testId: <test-uuid-here>
+}
+
+headers {
+  X-Dev-User-Id: {{devUserId}}
+}
