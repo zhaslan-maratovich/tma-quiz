@@ -12,39 +12,55 @@ Backend для Telegram Mini App — конструктор тестов/опр�
 - **Storage**: Yandex Object Storage (S3-compatible)
 - **Testing**: Vitest + Supertest
 
-## Быстрый старт
+---
 
-### Требования
+## 🚀 Быстрые команды
 
-- Node.js >= 18.0.0
-- Docker & Docker Compose
-- PostgreSQL 16+ (или Docker)
-- Redis 7+ (или Docker)
-
-### Установка
+### Локальная разработка
 
 ```bash
-# Клонируйте репозиторий
-git clone <repository-url>
-cd backend
+# Первый запуск
+npm install                    # Установить зависимости
+cp env.example .env            # Скопировать переменные окружения
+docker-compose up -d           # Поднять PostgreSQL + Redis
+npm run prisma:push            # Применить схему БД
+npm run dev                    # Запустить dev сервер
 
-# Установите зависимости
-npm install
-
-# Скопируйте переменные окружения
-cp env.example .env
-
-# Запустите PostgreSQL и Redis в Docker
-docker-compose up -d
-
-# Примените миграции
-npm run prisma:push
-
-# Запустите dev сервер
-npm run dev
+# Ежедневная работа
+docker-compose up -d           # Если контейнеры остановлены
+npm run dev                    # Запустить сервер
 ```
 
-Сервер запустится на `http://localhost:3000`
+### Деплой на VPS (Production)
+
+```bash
+# Первый деплой
+git clone <repository-url>
+cd backend/deploy
+cp .env.example .env           # Создать и заполнить .env
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml exec app npx prisma db push
+
+# Обновление (без изменения схемы БД)
+cd /opt/quiz-tma/backend/deploy
+git pull
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml up -d
+
+# Обновление (с изменением схемы БД)
+cd /opt/quiz-tma/backend/deploy
+git pull
+docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.prod.yml exec app npx prisma db push --skip-generate
+docker compose -f docker-compose.prod.yml up -d
+
+# Полезные команды на VPS
+docker compose -f docker-compose.prod.yml logs -f app     # Логи приложения
+docker compose -f docker-compose.prod.yml ps              # Статус контейнеров
+docker compose -f docker-compose.prod.yml restart app     # Перезапуск
+```
+
+---
 
 ## Скрипты
 
@@ -61,6 +77,8 @@ npm run dev
 | `npm run prisma:migrate`  | Создание и применение миграций     |
 | `npm run prisma:studio`   | Открыть Prisma Studio (GUI для БД) |
 | `npm run typecheck`       | Проверка типов без компиляции      |
+
+---
 
 ## Переменные окружения
 
@@ -86,6 +104,8 @@ S3_SECRET_KEY=your_secret_key
 # Telegram
 TELEGRAM_BOT_TOKEN=your_bot_token
 ```
+
+---
 
 ## Структура проекта
 
@@ -118,6 +138,8 @@ backend/
 ├── deploy/                 # Файлы для деплоя
 └── docker-compose.yml      # Docker для разработки
 ```
+
+---
 
 ## API Endpoints
 
@@ -181,6 +203,8 @@ backend/
 | POST   | `/api/sessions/:id/share` | Сгенерировать share-картинку |
 | GET    | `/health`                 | Health check                 |
 
+---
+
 ## Типы тестов
 
 ### 1. Quiz (Викторина)
@@ -200,6 +224,8 @@ backend/
 - Каждый ответ ведёт к конкретному следующему вопросу или результату
 - Нелинейное прохождение
 - Пример: "Выбери своё приключение"
+
+---
 
 ## База данных
 
@@ -235,46 +261,22 @@ User 1───* Test 1───1 TestWelcomeScreen
                          └───* SharedResult
 ```
 
+---
+
 ## Rate Limiting
 
 - Глобальный лимит: 100 запросов / минута
 - На эндпоинт авторизации: 5 запросов / минута
 - На загрузку файлов: 10 запросов / минута
 
+---
+
 ## Деплой
 
 Подробная инструкция по деплою в Yandex Cloud:
 [deploy/yandex-cloud-setup.md](./deploy/yandex-cloud-setup.md)
 
-### Docker
-
-```bash
-# Сборка образа
-docker build -t quiz-tma-backend .
-
-# Запуск
-docker run -p 3000:3000 --env-file .env quiz-tma-backend
-```
-
-### Docker Compose (Production)
-
-```bash
-cd deploy
-docker compose -f docker-compose.prod.yml up -d
-```
-
-## Локальная разработка с Docker
-
-```bash
-# Запуск PostgreSQL + Redis
-docker-compose up -d
-
-# Применить схему БД
-npm run prisma:push
-
-# Запуск dev сервера
-npm run dev
-```
+---
 
 ## Тестирование
 
@@ -288,6 +290,8 @@ npm run test:run
 # С покрытием
 npm run test:coverage
 ```
+
+---
 
 ## Полезные команды Prisma
 
@@ -304,6 +308,8 @@ npm run prisma:push
 # Создать миграцию
 npm run prisma:migrate
 ```
+
+---
 
 ## Лицензия
 
