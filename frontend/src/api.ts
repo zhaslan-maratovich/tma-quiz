@@ -54,12 +54,20 @@ async function apiFetch<T>(
 ): Promise<ApiResponse<T>> {
   const url = `${API_URL}${endpoint}`;
 
+  // Добавляем Content-Type только если есть body
+  const headers: Record<string, string> = {
+    ...getAuthHeader(),
+  };
+
+  if (options.body) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const response = await fetch(url, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeader(),
-      ...options.headers,
+      ...headers,
+      ...options.headers as Record<string, string>,
     },
   });
 
