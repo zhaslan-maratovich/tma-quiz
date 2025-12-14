@@ -1,0 +1,9 @@
+/* Минимальные глобальные стили */
+:root {
+  color-scheme: dark;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
