@@ -16,6 +16,19 @@ interface ApiResponse<T> {
   };
 }
 
+interface AuthUser {
+  telegramId: string;
+  id?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+interface AuthResponse {
+  user: AuthUser;
+  isNewUser: boolean;
+}
+
 /**
  * Получает initData из Telegram WebApp или использует dev-режим
  */
@@ -72,15 +85,21 @@ export async function checkHealth() {
 /**
  * Авторизация (для Telegram режима)
  */
-export async function authenticate() {
+export async function authenticate(): Promise<ApiResponse<AuthResponse>> {
   const tg = (window as any).Telegram?.WebApp;
 
   if (!tg?.initData) {
     // В dev-режиме сразу возвращаем успех
-    return { success: true, data: { user: { telegramId: DEV_USER_ID }, isNewUser: false } };
+    return {
+      success: true,
+      data: {
+        user: { telegramId: DEV_USER_ID },
+        isNewUser: false
+      }
+    };
   }
 
-  return apiFetch('/api/auth/telegram', {
+  return apiFetch<AuthResponse>('/api/auth/telegram', {
     method: 'POST',
     body: JSON.stringify({ initData: tg.initData }),
   });
