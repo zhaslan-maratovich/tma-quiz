@@ -33,8 +33,9 @@ export function SharePage() {
   useBackButton(() => navigate('/'));
 
   const botUsername = import.meta.env.VITE_BOT_USERNAME || 'your_bot';
+  const appName = import.meta.env.VITE_APP_NAME || 'app';
   const testLink = test?.slug
-    ? `https://t.me/${botUsername}/app?startapp=${test.slug}`
+    ? `https://t.me/${botUsername}/${appName}?startapp=${test.slug}`
     : '';
 
   const handleCopyLink = async () => {

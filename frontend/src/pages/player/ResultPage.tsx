@@ -56,7 +56,8 @@ export function ResultPage() {
     const shareText = `Я прошёл тест "${test.welcomeScreen?.title}"!\n\nМой результат: ${resultText}\n\nПройди и ты!`;
 
     const botUsername = import.meta.env.VITE_BOT_USERNAME || 'your_bot';
-    const testLink = `https://t.me/${botUsername}/app?startapp=${slug}`;
+    const appName = import.meta.env.VITE_APP_NAME || 'app';
+    const testLink = `https://t.me/${botUsername}/${appName}?startapp=${slug}`;
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(testLink)}&text=${encodeURIComponent(shareText)}`;
 
     openTelegramLink(shareUrl);

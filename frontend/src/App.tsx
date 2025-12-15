@@ -3,7 +3,7 @@
  */
 
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,7 +25,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 
 // Lib
-import { initTelegramApp } from '@/lib/telegram';
+import { initTelegramApp, getStartParam } from '@/lib/telegram';
 
 // Create query client
 const queryClient = new QueryClient({
@@ -117,6 +117,23 @@ function ErrorScreen({ message }: { message: string }) {
 }
 
 /**
+ * StartParamRedirect - Обрабатывает startapp параметр из Telegram
+ */
+function StartParamRedirect() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const startParam = getStartParam();
+    if (startParam) {
+      // Если есть start_param, это slug теста - редиректим на страницу прохождения
+      navigate(`/play/${startParam}`, { replace: true });
+    }
+  }, [navigate]);
+
+  return null;
+}
+
+/**
  * Authenticated Routes
  */
 function AuthenticatedApp() {
@@ -132,6 +149,8 @@ function AuthenticatedApp() {
 
   return (
     <AnimatePresence mode="wait">
+      {/* Обрабатываем startapp параметр */}
+      <StartParamRedirect />
       <Routes>
         {/* Creator routes */}
         <Route path="/" element={<HomePage />} />
