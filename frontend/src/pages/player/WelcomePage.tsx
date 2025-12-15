@@ -21,7 +21,7 @@ export function WelcomePage() {
   const navigate = useNavigate();
   const haptic = useHaptic();
 
-  const { setTest, startTest, reset, loadProgress } = usePlayStore();
+  const { setTest, startTest, loadProgress } = usePlayStore();
 
   // Fetch test data
   const { data: test, isLoading, error } = useQuery({
@@ -43,12 +43,17 @@ export function WelcomePage() {
     onSuccess: (result) => {
       // Если получили sessionId - тест успешно начат
       if (result.sessionId) {
+        // Убеждаемся что test установлен в стор
+        if (test) {
+          setTest(test);
+        }
         startTest();
         haptic.notification('success');
         navigate(`/play/${slug}/question`);
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Start test error:', error);
       haptic.notification('error');
     },
   });
@@ -67,7 +72,7 @@ export function WelcomePage() {
 
   const handleStart = () => {
     haptic.impact('medium');
-    reset();
+    // Сначала мутируем API, потом в onSuccess делаем переход
     startTestMutation.mutate();
   };
 
