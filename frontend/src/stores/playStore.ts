@@ -93,13 +93,14 @@ export const usePlayStore = create<PlayState>()(
 
       completeTest: () => set({ isCompleted: true }),
 
-      reset: () => set({
-        test: null,
+      reset: () => set((state) => ({
+        // Не сбрасываем test - он нужен для прохождения
+        test: state.test,
         currentQuestionIndex: 0,
         answers: [],
         startedAt: null,
         isCompleted: false,
-      }),
+      })),
 
       getCurrentQuestion: () => {
         const { test, currentQuestionIndex } = get();
