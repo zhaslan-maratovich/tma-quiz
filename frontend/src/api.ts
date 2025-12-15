@@ -36,12 +36,18 @@ function getAuthHeader(): Record<string, string> {
   // Проверяем, есть ли Telegram WebApp
   const tg = (window as any).Telegram?.WebApp;
 
+  console.log('[Auth] Telegram WebApp:', !!tg);
+  console.log('[Auth] initData exists:', !!tg?.initData);
+  console.log('[Auth] initData length:', tg?.initData?.length || 0);
+
   if (tg?.initData) {
     // Production: используем initData от Telegram
+    console.log('[Auth] Using Telegram Authorization');
     return { 'Authorization': `tma ${tg.initData}` };
   }
 
   // Development: используем X-Dev-User-Id
+  console.log('[Auth] Using Dev mode X-Dev-User-Id');
   return { 'X-Dev-User-Id': DEV_USER_ID };
 }
 
@@ -145,9 +151,27 @@ export async function createSampleTest() {
  * Удалить тест
  */
 export async function deleteTest(testId: string) {
-  return apiFetch(`/api/tests/${testId}`, {
+  const url = `${API_URL}/api/tests/${testId}`;
+
+  const response = await fetch(url, {
     method: 'DELETE',
+    headers: {
+      ...getAuthHeader(),
+    },
   });
+
+  // DELETE может вернуть пустой ответ (204 No Content)
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return { success: true, data: null };
+  }
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error?.message || `HTTP ${response.status}`);
+  }
+
+  return data;
 }
 
 /**
