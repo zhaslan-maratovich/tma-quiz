@@ -52,20 +52,25 @@ async function request<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  const headers: Record<string, string> = {};
+
+  // Устанавливаем Content-Type только если есть body
+  if (options.body) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   // Добавляем Authorization header
   const initData = getAuthToken();
   if (initData) {
-    (headers as Record<string, string>)['Authorization'] = `tma ${initData}`;
+    headers['Authorization'] = `tma ${initData}`;
   }
 
   const response = await fetch(url, {
     ...options,
-    headers,
+    headers: {
+      ...headers,
+      ...options.headers as Record<string, string>,
+    },
   });
 
   // Обработка 204 No Content
