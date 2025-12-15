@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Eye,
   Rocket,
-  AlertCircle
+  AlertCircle,
+  Pencil
 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageContainer, Header } from '@/components/layout';
@@ -109,9 +110,19 @@ export function EditTestPage() {
   // Question mutations
   const createQuestion = useMutation({
     mutationFn: (text: string) => questionsApi.createQuestion(id!, { text }),
-    onSuccess: () => {
+    onSuccess: (newQuestion) => {
       queryClient.invalidateQueries({ queryKey: ['tests', id] });
       haptic.notification('success');
+      // Автоматически открываем новый вопрос для редактирования
+      setEditingQuestion(newQuestion.id);
+    },
+  });
+
+  const updateQuestion = useMutation({
+    mutationFn: ({ questionId, text }: { questionId: string; text: string }) =>
+      questionsApi.updateQuestion(questionId, { text }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tests', id] });
     },
   });
 
@@ -133,8 +144,8 @@ export function EditTestPage() {
   });
 
   const updateAnswer = useMutation({
-    mutationFn: ({ answerId, isCorrect }: { answerId: string; isCorrect: boolean }) =>
-      answersApi.updateAnswer(answerId, { isCorrect }),
+    mutationFn: ({ answerId, text, isCorrect }: { answerId: string; text?: string; isCorrect?: boolean }) =>
+      answersApi.updateAnswer(answerId, { text, isCorrect }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tests', id] });
     },
@@ -152,6 +163,10 @@ export function EditTestPage() {
     await createQuestion.mutateAsync('Новый вопрос');
   };
 
+  const handleUpdateQuestion = async (questionId: string, text: string) => {
+    await updateQuestion.mutateAsync({ questionId, text });
+  };
+
   const handleDeleteQuestion = async (questionId: string) => {
     const confirmed = await showConfirm('Удалить этот вопрос?');
     if (confirmed) {
@@ -163,6 +178,10 @@ export function EditTestPage() {
   const handleAddAnswer = async (questionId: string) => {
     haptic.impact('light');
     await createAnswer.mutateAsync({ questionId, text: 'Новый ответ' });
+  };
+
+  const handleUpdateAnswer = async (answerId: string, text: string) => {
+    await updateAnswer.mutateAsync({ answerId, text });
   };
 
   const handleToggleCorrect = async (answer: Answer) => {
@@ -362,8 +381,10 @@ export function EditTestPage() {
                   onToggle={() => setEditingQuestion(
                     editingQuestion === question.id ? null : question.id
                   )}
+                  onUpdateQuestion={handleUpdateQuestion}
                   onDelete={() => handleDeleteQuestion(question.id)}
                   onAddAnswer={() => handleAddAnswer(question.id)}
+                  onUpdateAnswer={handleUpdateAnswer}
                   onToggleCorrect={handleToggleCorrect}
                   onDeleteAnswer={handleDeleteAnswer}
                   disabled={isPublished}
@@ -424,8 +445,10 @@ interface QuestionCardProps {
   testType: TestType;
   isExpanded: boolean;
   onToggle: () => void;
+  onUpdateQuestion: (questionId: string, text: string) => void;
   onDelete: () => void;
   onAddAnswer: () => void;
+  onUpdateAnswer: (answerId: string, text: string) => void;
   onToggleCorrect: (answer: Answer) => void;
   onDeleteAnswer: (answerId: string) => void;
   disabled: boolean;
@@ -437,14 +460,37 @@ function QuestionCard({
   testType,
   isExpanded,
   onToggle,
+  onUpdateQuestion,
   onDelete,
   onAddAnswer,
+  onUpdateAnswer,
   onToggleCorrect,
   onDeleteAnswer,
   disabled,
 }: QuestionCardProps) {
+  const [questionText, setQuestionText] = useState(question.text);
+  const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const answers = question.answers || [];
   const hasCorrectAnswer = answers.some(a => a.isCorrect);
+
+  // Sync question text with prop
+  useEffect(() => {
+    setQuestionText(question.text);
+  }, [question.text]);
+
+  const handleQuestionBlur = () => {
+    if (questionText !== question.text && questionText.trim()) {
+      onUpdateQuestion(question.id, questionText);
+    }
+    setIsEditingQuestion(false);
+  };
+
+  const handleQuestionKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleQuestionBlur();
+    }
+  };
 
   return (
     <motion.div
@@ -496,19 +542,54 @@ function QuestionCard({
               exit={{ height: 0 }}
               className="overflow-hidden"
             >
-              <div className="px-4 pb-4 pt-2 border-t border-tg-separator space-y-3">
+              <div className="px-4 pb-4 pt-2 border-t border-tg-separator space-y-4">
+                {/* Question text editor */}
+                {!disabled && (
+                  <div>
+                    <label className="text-xs font-medium text-tg-hint mb-2 block">
+                      Текст вопроса
+                    </label>
+                    {isEditingQuestion ? (
+                      <Textarea
+                        value={questionText}
+                        onChange={(e) => setQuestionText(e.target.value)}
+                        onBlur={handleQuestionBlur}
+                        onKeyDown={handleQuestionKeyDown}
+                        placeholder="Введите текст вопроса"
+                        rows={2}
+                        autoFocus
+                        className="text-sm"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setIsEditingQuestion(true)}
+                        className="w-full p-3 rounded-xl bg-tg-secondary-bg text-left text-sm text-tg-text hover:bg-tg-secondary-bg/80 transition-colors flex items-center gap-2"
+                      >
+                        <span className="flex-1">{questionText}</span>
+                        <Pencil className="h-4 w-4 text-tg-hint flex-shrink-0" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {/* Answers list */}
-                <div className="space-y-2">
-                  {answers.map((answer) => (
-                    <AnswerItem
-                      key={answer.id}
-                      answer={answer}
-                      testType={testType}
-                      onToggleCorrect={() => onToggleCorrect(answer)}
-                      onDelete={() => onDeleteAnswer(answer.id)}
-                      disabled={disabled}
-                    />
-                  ))}
+                <div>
+                  <label className="text-xs font-medium text-tg-hint mb-2 block">
+                    Варианты ответов
+                  </label>
+                  <div className="space-y-2">
+                    {answers.map((answer) => (
+                      <AnswerItem
+                        key={answer.id}
+                        answer={answer}
+                        testType={testType}
+                        onUpdateAnswer={onUpdateAnswer}
+                        onToggleCorrect={() => onToggleCorrect(answer)}
+                        onDelete={() => onDeleteAnswer(answer.id)}
+                        disabled={disabled}
+                      />
+                    ))}
+                  </div>
                 </div>
 
                 {/* Actions */}
@@ -520,7 +601,7 @@ function QuestionCard({
                       onClick={onAddAnswer}
                     >
                       <Plus className="h-4 w-4" />
-                      Ответ
+                      Добавить ответ
                     </Button>
                     <Button
                       variant="ghost"
@@ -529,7 +610,7 @@ function QuestionCard({
                       className="text-tg-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Удалить
+                      Удалить вопрос
                     </Button>
                   </div>
                 )}
@@ -545,6 +626,7 @@ function QuestionCard({
 interface AnswerItemProps {
   answer: Answer;
   testType: TestType;
+  onUpdateAnswer: (answerId: string, text: string) => void;
   onToggleCorrect: () => void;
   onDelete: () => void;
   disabled: boolean;
@@ -553,10 +635,33 @@ interface AnswerItemProps {
 function AnswerItem({
   answer,
   testType,
+  onUpdateAnswer,
   onToggleCorrect,
   onDelete,
   disabled,
 }: AnswerItemProps) {
+  const [answerText, setAnswerText] = useState(answer.text);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Sync answer text with prop
+  useEffect(() => {
+    setAnswerText(answer.text);
+  }, [answer.text]);
+
+  const handleBlur = () => {
+    if (answerText !== answer.text && answerText.trim()) {
+      onUpdateAnswer(answer.id, answerText);
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleBlur();
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -575,17 +680,37 @@ function AnswerItem({
             "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
             answer.isCorrect
               ? "bg-accent-emerald border-accent-emerald text-white"
-              : "border-tg-hint"
+              : "border-tg-hint hover:border-accent-emerald"
           )}
         >
           {answer.isCorrect && <Check className="h-4 w-4" />}
         </button>
       )}
 
-      {/* Answer text */}
-      <span className="flex-1 text-sm text-tg-text">
-        {answer.text}
-      </span>
+      {/* Answer text - editable */}
+      {disabled ? (
+        <span className="flex-1 text-sm text-tg-text">
+          {answer.text}
+        </span>
+      ) : isEditing ? (
+        <Input
+          value={answerText}
+          onChange={(e) => setAnswerText(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder="Введите ответ"
+          autoFocus
+          className="flex-1 text-sm py-1 h-auto"
+        />
+      ) : (
+        <button
+          onClick={() => setIsEditing(true)}
+          className="flex-1 text-left text-sm text-tg-text hover:text-tg-link transition-colors flex items-center gap-2"
+        >
+          <span className="flex-1">{answerText}</span>
+          <Pencil className="h-3 w-3 text-tg-hint opacity-0 group-hover:opacity-100 flex-shrink-0" />
+        </button>
+      )}
 
       {/* Delete button */}
       {!disabled && (
