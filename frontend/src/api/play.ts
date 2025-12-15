@@ -22,8 +22,8 @@ export async function getExistingSession(slug: string): Promise<UserSession | nu
 /**
  * Начать прохождение теста
  */
-export async function startTest(slug: string): Promise<{ session: UserSession; canStart: boolean }> {
-  return api.post<{ session: UserSession; canStart: boolean }>(`/api/play/${slug}/start`);
+export async function startTest(slug: string): Promise<{ sessionId: string; testId: string }> {
+  return api.post<{ sessionId: string; testId: string }>(`/api/play/${slug}/start`);
 }
 
 /**

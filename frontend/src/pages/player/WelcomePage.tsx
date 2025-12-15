@@ -41,7 +41,8 @@ export function WelcomePage() {
   const startTestMutation = useMutation({
     mutationFn: () => playApi.startTest(slug!),
     onSuccess: (result) => {
-      if (result.canStart) {
+      // Если получили sessionId - тест успешно начат
+      if (result.sessionId) {
         startTest();
         haptic.notification('success');
         navigate(`/play/${slug}/question`);
