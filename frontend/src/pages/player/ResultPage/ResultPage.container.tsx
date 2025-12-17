@@ -1,0 +1,87 @@
+/**
+ * ResultPage Container - компонент с логикой
+ */
+
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { playApi } from '@/api';
+import { usePlayStore } from '@/stores/playStore';
+import { useHaptic } from '@/hooks/useTelegram';
+import { openTelegramLink, showAlert } from '@/lib/telegram';
+import { ResultPageView } from './ResultPage.view';
+
+export function ResultPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const haptic = useHaptic();
+
+  const { reset, clearProgress } = usePlayStore();
+
+  // Fetch session with result
+  const { data: session, isLoading } = useQuery({
+    queryKey: ['play', slug, 'session'],
+    queryFn: () => playApi.getExistingSession(slug!),
+    enabled: !!slug,
+  });
+
+  // Fetch test for retake check
+  const { data: test } = useQuery({
+    queryKey: ['play', slug],
+    queryFn: () => playApi.getTestBySlug(slug!),
+    enabled: !!slug,
+  });
+
+  const canRetake = test?.allowRetake ?? false;
+
+  const handleShare = async () => {
+    haptic.impact('medium');
+
+    if (!session || !test) return;
+
+    const resultText = session.result?.title || `${session.score}/${session.maxScore}`;
+    const shareText = `Я прошёл тест "${test.welcomeScreen?.title}"!\n\nМой результат: ${resultText}\n\nПройди и ты!`;
+
+    const botUsername = import.meta.env.VITE_BOT_USERNAME || 'your_bot';
+    const appName = import.meta.env.VITE_APP_NAME || 'app';
+    const testLink = `https://t.me/${botUsername}/${appName}?startapp=${slug}`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(testLink)}&text=${encodeURIComponent(shareText)}`;
+
+    openTelegramLink(shareUrl);
+  };
+
+  const handleRetake = async () => {
+    if (!canRetake) {
+      await showAlert('Повторное прохождение недоступно');
+      return;
+    }
+
+    haptic.impact('light');
+    reset();
+    clearProgress(slug!);
+    navigate(`/play/${slug}`);
+  };
+
+  const handleGoHome = () => {
+    haptic.impact('light');
+    reset();
+    clearProgress(slug!);
+    navigate('/');
+  };
+
+  const handleGoToTest = () => {
+    navigate(`/play/${slug}`);
+  };
+
+  return (
+    <ResultPageView
+      test={test || null}
+      session={session || null}
+      isLoading={isLoading}
+      canRetake={canRetake}
+      onShare={handleShare}
+      onRetake={handleRetake}
+      onGoHome={handleGoHome}
+      onGoToTest={handleGoToTest}
+    />
+  );
+}

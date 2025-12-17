@@ -1,7 +1,7 @@
 /**
- * Экспорт страниц игрока
+ * Player pages - страницы прохождения теста
  */
 
-export * from './WelcomePage';
-export * from './QuestionPage';
-export * from './ResultPage';
+export { WelcomePage } from './WelcomePage';
+export { QuestionPage } from './QuestionPage';
+export { ResultPage } from './ResultPage';

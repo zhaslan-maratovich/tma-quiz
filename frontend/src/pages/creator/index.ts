@@ -1,9 +1,9 @@
 /**
- * Экспорт страниц создателя
+ * Creator pages - страницы создателя тестов
  */
 
-export * from './HomePage';
-export * from './CreatePage';
-export * from './EditTestPage';
-export * from './SharePage';
-export * from './AnalyticsPage';
+export { HomePage } from './HomePage';
+export { CreatePage } from './CreatePage';
+export { EditTestPage } from './EditTestPage';
+export { SharePage } from './SharePage';
+export { AnalyticsPage } from './AnalyticsPage';
