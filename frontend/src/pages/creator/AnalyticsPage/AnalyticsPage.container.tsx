@@ -8,28 +8,28 @@ import { useBackButton, useHaptic } from '@/hooks/useTelegram';
 import { AnalyticsPageView } from './AnalyticsPage.view';
 
 export function AnalyticsPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const haptic = useHaptic();
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    const haptic = useHaptic();
 
-  const { data: test, isLoading: testLoading } = useTest(id!);
-  const { data: analytics, isLoading: analyticsLoading } = useTestAnalytics(id!);
+    const { data: test, isLoading: testLoading } = useTest(id!);
+    const { data: analytics, isLoading: analyticsLoading } = useTestAnalytics(id!);
 
-  useBackButton(() => navigate('/'));
+    useBackButton(() => navigate('/'));
 
-  const isLoading = testLoading || analyticsLoading;
+    const isLoading = testLoading || analyticsLoading;
 
-  const handleShare = () => {
-    haptic.impact('light');
-    navigate(`/tests/${id}/share`);
-  };
+    const handleShare = () => {
+        haptic.impact('light');
+        navigate(`/tests/${id}/share`);
+    };
 
-  return (
-    <AnalyticsPageView
-      test={test || null}
-      analytics={analytics || null}
-      isLoading={isLoading}
-      onShare={handleShare}
-    />
-  );
+    return (
+        <AnalyticsPageView
+            test={test || null}
+            analytics={analytics || null}
+            isLoading={isLoading}
+            onShare={handleShare}
+        />
+    );
 }

@@ -3,32 +3,22 @@
  */
 
 // Test components
-export {
-  TestCard,
-  TestCardView,
-  TestTypeSelector,
-  TestTypeSelectorView,
-} from './test';
+export { TestCard, TestCardView, TestTypeSelector, TestTypeSelectorView } from './test';
 export type {
-  TestCardViewProps,
-  TestCardContainerProps,
-  TestTypeSelectorViewProps,
-  TestTypeSelectorContainerProps,
-  TestTypeOption,
+    TestCardViewProps,
+    TestCardContainerProps,
+    TestTypeSelectorViewProps,
+    TestTypeSelectorContainerProps,
+    TestTypeOption,
 } from './test';
 
 // Question components
-export {
-  QuestionCard,
-  QuestionCardView,
-  AnswerItem,
-  AnswerItemView,
-} from './question';
+export { QuestionCard, QuestionCardView, AnswerItem, AnswerItemView } from './question';
 export type {
-  QuestionCardViewProps,
-  QuestionCardContainerProps,
-  AnswerItemViewProps,
-  AnswerItemContainerProps,
+    QuestionCardViewProps,
+    QuestionCardContainerProps,
+    AnswerItemViewProps,
+    AnswerItemContainerProps,
 } from './question';
 
 // Analytics components

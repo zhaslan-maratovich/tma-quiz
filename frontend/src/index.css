@@ -4,174 +4,176 @@
 
 /* CSS переменные для Telegram Mini App */
 :root {
-  --tg-theme-bg-color: #ffffff;
-  --tg-theme-secondary-bg-color: #f7f7f7;
-  --tg-theme-text-color: #1a1a1a;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-link-color: #007aff;
-  --tg-theme-button-color: #007aff;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-header-bg-color: #ffffff;
-  --tg-theme-accent-text-color: #007aff;
-  --tg-theme-section-bg-color: #ffffff;
-  --tg-theme-section-header-text-color: #8e8e93;
-  --tg-theme-section-separator-color: #e5e5ea;
-  --tg-theme-subtitle-text-color: #8e8e93;
-  --tg-theme-destructive-text-color: #ff3b30;
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-secondary-bg-color: #f7f7f7;
+    --tg-theme-text-color: #1a1a1a;
+    --tg-theme-hint-color: #8e8e93;
+    --tg-theme-link-color: #007aff;
+    --tg-theme-button-color: #007aff;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-header-bg-color: #ffffff;
+    --tg-theme-accent-text-color: #007aff;
+    --tg-theme-section-bg-color: #ffffff;
+    --tg-theme-section-header-text-color: #8e8e93;
+    --tg-theme-section-separator-color: #e5e5ea;
+    --tg-theme-subtitle-text-color: #8e8e93;
+    --tg-theme-destructive-text-color: #ff3b30;
 
-  --color-primary: 14 165 233;
-  --color-secondary: 100 116 139;
+    --color-primary: 14 165 233;
+    --color-secondary: 100 116 139;
 }
 
 /* Тёмная тема */
 .dark {
-  --tg-theme-bg-color: #1c1c1e;
-  --tg-theme-secondary-bg-color: #2c2c2e;
-  --tg-theme-text-color: #ffffff;
-  --tg-theme-hint-color: #8e8e93;
-  --tg-theme-link-color: #0a84ff;
-  --tg-theme-button-color: #0a84ff;
-  --tg-theme-button-text-color: #ffffff;
-  --tg-theme-header-bg-color: #1c1c1e;
-  --tg-theme-accent-text-color: #0a84ff;
-  --tg-theme-section-bg-color: #2c2c2e;
-  --tg-theme-section-header-text-color: #8e8e93;
-  --tg-theme-section-separator-color: #3d3d3f;
-  --tg-theme-subtitle-text-color: #8e8e93;
-  --tg-theme-destructive-text-color: #ff453a;
+    --tg-theme-bg-color: #1c1c1e;
+    --tg-theme-secondary-bg-color: #2c2c2e;
+    --tg-theme-text-color: #ffffff;
+    --tg-theme-hint-color: #8e8e93;
+    --tg-theme-link-color: #0a84ff;
+    --tg-theme-button-color: #0a84ff;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-header-bg-color: #1c1c1e;
+    --tg-theme-accent-text-color: #0a84ff;
+    --tg-theme-section-bg-color: #2c2c2e;
+    --tg-theme-section-header-text-color: #8e8e93;
+    --tg-theme-section-separator-color: #3d3d3f;
+    --tg-theme-subtitle-text-color: #8e8e93;
+    --tg-theme-destructive-text-color: #ff453a;
 }
 
 /* Base styles */
 @layer base {
-  * {
-    @apply border-tg-separator;
-  }
+    * {
+        @apply border-tg-separator;
+    }
 
-  html {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-  }
+    html {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+    }
 
-  body {
-    @apply bg-tg-bg text-tg-text antialiased;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    overscroll-behavior: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
+    body {
+        @apply bg-tg-bg text-tg-text antialiased;
+        font-family:
+            -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica,
+            Arial, sans-serif;
+        overscroll-behavior: none;
+        user-select: none;
+        -webkit-user-select: none;
+    }
 
-  /* Safe area padding для мобильных устройств */
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
-  }
+    /* Safe area padding для мобильных устройств */
+    .safe-area-top {
+        padding-top: env(safe-area-inset-top);
+    }
 
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 
-  /* Скрываем скроллбар но оставляем функциональность */
-  .hide-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+    /* Скрываем скроллбар но оставляем функциональность */
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 /* Component utilities */
 @layer components {
-  /* Gradient backgrounds */
-  .gradient-mesh {
-    background:
-      radial-gradient(at 40% 20%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
-      radial-gradient(at 80% 50%, rgba(245, 158, 11, 0.06) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
-  }
+    /* Gradient backgrounds */
+    .gradient-mesh {
+        background:
+            radial-gradient(at 40% 20%, rgba(14, 165, 233, 0.12) 0px, transparent 50%),
+            radial-gradient(at 80% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+            radial-gradient(at 0% 50%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
+            radial-gradient(at 80% 50%, rgba(245, 158, 11, 0.06) 0px, transparent 50%),
+            radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+    }
 
-  .gradient-primary {
-    @apply bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700;
-  }
+    .gradient-primary {
+        @apply bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700;
+    }
 
-  .gradient-accent {
-    @apply bg-gradient-to-r from-accent-violet via-primary-500 to-accent-emerald;
-  }
+    .gradient-accent {
+        @apply bg-gradient-to-r from-accent-violet via-primary-500 to-accent-emerald;
+    }
 
-  /* Card styles */
-  .card {
-    @apply bg-tg-section rounded-2xl shadow-card;
-  }
+    /* Card styles */
+    .card {
+        @apply bg-tg-section rounded-2xl shadow-card;
+    }
 
-  .card-interactive {
-    @apply card transition-all duration-200 active:scale-[0.98] active:shadow-tg;
-  }
+    .card-interactive {
+        @apply card transition-all duration-200 active:scale-[0.98] active:shadow-tg;
+    }
 
-  /* Button base */
-  .btn-base {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200;
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
-    @apply disabled:opacity-50 disabled:pointer-events-none;
-    @apply active:scale-[0.97];
-  }
+    /* Button base */
+    .btn-base {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200;
+        @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+        @apply disabled:opacity-50 disabled:pointer-events-none;
+        @apply active:scale-[0.97];
+    }
 
-  /* Input base */
-  .input-base {
-    @apply w-full px-4 py-3 rounded-xl bg-tg-secondary-bg text-tg-text placeholder:text-tg-hint;
-    @apply border border-transparent focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20;
-    @apply transition-all duration-200 outline-none;
-  }
+    /* Input base */
+    .input-base {
+        @apply w-full px-4 py-3 rounded-xl bg-tg-secondary-bg text-tg-text placeholder:text-tg-hint;
+        @apply border border-transparent focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20;
+        @apply transition-all duration-200 outline-none;
+    }
 
-  /* Skeleton loading */
-  .skeleton {
-    @apply animate-pulse bg-tg-secondary-bg rounded-lg;
-  }
+    /* Skeleton loading */
+    .skeleton {
+        @apply animate-pulse bg-tg-secondary-bg rounded-lg;
+    }
 
-  /* Glass effect */
-  .glass {
-    @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl;
-  }
+    /* Glass effect */
+    .glass {
+        @apply bg-white/70 dark:bg-black/40 backdrop-blur-xl;
+    }
 
-  /* Telegram-style section */
-  .tg-section {
-    @apply bg-tg-section rounded-2xl overflow-hidden;
-  }
+    /* Telegram-style section */
+    .tg-section {
+        @apply bg-tg-section rounded-2xl overflow-hidden;
+    }
 
-  .tg-section-header {
-    @apply px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-wider text-tg-section-header;
-  }
+    .tg-section-header {
+        @apply px-4 pt-4 pb-2 text-xs font-semibold uppercase tracking-wider text-tg-section-header;
+    }
 
-  .tg-section-item {
-    @apply px-4 py-3 flex items-center justify-between;
-    @apply border-b border-tg-separator last:border-b-0;
-  }
+    .tg-section-item {
+        @apply px-4 py-3 flex items-center justify-between;
+        @apply border-b border-tg-separator last:border-b-0;
+    }
 }
 
 /* Utility overrides */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+    .text-balance {
+        text-wrap: balance;
+    }
 
-  .animate-delay-100 {
-    animation-delay: 100ms;
-  }
+    .animate-delay-100 {
+        animation-delay: 100ms;
+    }
 
-  .animate-delay-200 {
-    animation-delay: 200ms;
-  }
+    .animate-delay-200 {
+        animation-delay: 200ms;
+    }
 
-  .animate-delay-300 {
-    animation-delay: 300ms;
-  }
+    .animate-delay-300 {
+        animation-delay: 300ms;
+    }
 
-  .animate-delay-400 {
-    animation-delay: 400ms;
-  }
+    .animate-delay-400 {
+        animation-delay: 400ms;
+    }
 
-  .animate-delay-500 {
-    animation-delay: 500ms;
-  }
+    .animate-delay-500 {
+        animation-delay: 500ms;
+    }
 }
