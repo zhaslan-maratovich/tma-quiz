@@ -3,7 +3,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { FileText, Play, RotateCcw } from 'lucide-react';
+import { FileText, RotateCcw } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -16,8 +16,7 @@ export function WelcomePageView({
     existingSession,
     isLoading,
     error,
-    isStarting,
-    onStart,
+    // isStarting и onStart не используются - кнопка через Telegram MainButton
     onViewResult,
 }: WelcomePageViewProps) {
     if (isLoading) {
@@ -162,38 +161,23 @@ export function WelcomePageView({
                     )}
                 </div>
 
-                {/* Bottom buttons */}
+                {/* Bottom section - кнопки показываются через Telegram MainButton */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                     className="p-6 pt-4 space-y-3 safe-area-bottom"
                 >
-                    {hasCompletedSession && !canRetake ? (
-                        <Button variant="gradient" size="lg" fullWidth onClick={onViewResult}>
-                            Посмотреть результат
+                    {/* Показываем только кнопку просмотра прошлого результата если есть сессия и можно пройти заново */}
+                    {hasCompletedSession && canRetake && (
+                        <Button variant="secondary" fullWidth onClick={onViewResult}>
+                            <RotateCcw className="h-4 w-4" />
+                            Посмотреть прошлый результат
                         </Button>
-                    ) : (
-                        <>
-                            <Button
-                                variant="gradient"
-                                size="lg"
-                                fullWidth
-                                onClick={onStart}
-                                loading={isStarting}
-                            >
-                                <Play className="h-5 w-5" />
-                                {test.welcomeScreen?.buttonText || 'Начать'}
-                            </Button>
-
-                            {hasCompletedSession && canRetake && (
-                                <Button variant="secondary" fullWidth onClick={onViewResult}>
-                                    <RotateCcw className="h-4 w-4" />
-                                    Посмотреть прошлый результат
-                                </Button>
-                            )}
-                        </>
                     )}
+
+                    {/* Отступ для Telegram MainButton */}
+                    <div className="h-14" />
                 </motion.div>
             </div>
         </PageContainer>

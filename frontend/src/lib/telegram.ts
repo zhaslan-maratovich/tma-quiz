@@ -264,6 +264,9 @@ export function initTelegramApp(): void {
     webApp.onEvent('themeChanged', applyTelegramTheme);
 }
 
+// Хранит текущий обработчик MainButton для корректного удаления
+let currentMainButtonHandler: (() => void) | null = null;
+
 /**
  * Показывает MainButton
  */
@@ -271,6 +274,13 @@ export function showMainButton(text: string, onClick: () => void): void {
     const webApp = getTelegramWebApp();
     if (!webApp) return;
 
+    // Удаляем предыдущий обработчик если есть
+    if (currentMainButtonHandler) {
+        webApp.MainButton.offClick(currentMainButtonHandler);
+    }
+
+    // Сохраняем и устанавливаем новый обработчик
+    currentMainButtonHandler = onClick;
     webApp.MainButton.setText(text).onClick(onClick).show();
 }
 
@@ -280,6 +290,12 @@ export function showMainButton(text: string, onClick: () => void): void {
 export function hideMainButton(): void {
     const webApp = getTelegramWebApp();
     if (!webApp) return;
+
+    // Удаляем обработчик при скрытии
+    if (currentMainButtonHandler) {
+        webApp.MainButton.offClick(currentMainButtonHandler);
+        currentMainButtonHandler = null;
+    }
 
     webApp.MainButton.hide();
 }
