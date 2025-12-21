@@ -19,20 +19,20 @@ export function WelcomePage() {
 
     // Fetch test data
     const {
-        data: test,
-        isLoading,
-        error,
+        data: testData,
+        isLoading: isTestLoading,
+        error: testError,
     } = useQuery({
         queryKey: ['play', slug],
         queryFn: () => playApi.getTestBySlug(slug!),
-        enabled: !!slug,
+        enabled: Boolean(slug),
     });
 
     // Check existing session
     const { data: existingSession } = useQuery({
         queryKey: ['play', slug, 'session'],
         queryFn: () => playApi.getExistingSession(slug!),
-        enabled: !!slug,
+        enabled: Boolean(slug),
     });
 
     // Start test mutation
@@ -40,8 +40,8 @@ export function WelcomePage() {
         mutationFn: () => playApi.startTest(slug!),
         onSuccess: (result) => {
             if (result.sessionId) {
-                if (test) {
-                    setTest(test);
+                if (testData) {
+                    setTest(testData);
                 }
                 startTest();
                 haptic.notification('success');
@@ -56,11 +56,11 @@ export function WelcomePage() {
 
     // Set test data to store
     useEffect(() => {
-        if (test) {
-            setTest(test);
+        if (testData) {
+            setTest(testData);
             loadProgress(slug!);
         }
-    }, [test, setTest, loadProgress, slug]);
+    }, [testData, setTest, loadProgress, slug]);
 
     const handleStart = () => {
         haptic.impact('medium');
@@ -73,20 +73,20 @@ export function WelcomePage() {
     };
 
     // Use Telegram MainButton
-    useMainButton(
-        existingSession?.completedAt && !test?.allowRetake
+    useMainButton({
+        text: existingSession?.completedAt && !testData?.allowRetake
             ? 'Посмотреть результат'
-            : test?.welcomeScreen?.buttonText || 'Начать',
-        existingSession?.completedAt && !test?.allowRetake ? handleViewResult : handleStart,
-        { enabled: !!test && !isLoading }
-    );
+            : testData?.welcomeScreen?.buttonText || 'Начать',
+        onClick: existingSession?.completedAt && !testData?.allowRetake ? handleViewResult : handleStart,
+        options: { enabled: !!testData && !isTestLoading }
+    });
 
     return (
         <WelcomePageView
-            test={test || null}
+            test={testData || null}
             existingSession={existingSession || null}
-            isLoading={isLoading}
-            error={error}
+            isLoading={isTestLoading}
+            error={testError}
             isStarting={startTestMutation.isPending}
             onStart={handleStart}
             onViewResult={handleViewResult}

@@ -16,29 +16,33 @@ import {
 } from '@/lib/telegram';
 
 export function useTelegram() {
-    const [isReady, setIsReady] = useState(false);
-    const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');
+    // Используем ленивую инициализацию для начальных значений
+    // Это позволяет избежать синхронного setState в useEffect
+    const [isReady] = useState(() => {
+        // В dev mode сразу готовы
+        return !isTelegramWebApp() || Boolean(getTelegramWebApp());
+    });
+
+    const [colorScheme, setColorScheme] = useState<'light' | 'dark'>(() => {
+        // Получаем начальное значение цветовой схемы синхронно
+        const webApp = getTelegramWebApp();
+        return webApp?.colorScheme ?? 'light';
+    });
 
     useEffect(() => {
         const webApp = getTelegramWebApp();
 
         if (webApp) {
-            setColorScheme(webApp.colorScheme);
-
-            // Слушаем изменения темы
+            // Подписываемся на изменения темы (асинхронные события)
             const handleThemeChange = () => {
                 setColorScheme(webApp.colorScheme);
             };
 
             webApp.onEvent('themeChanged', handleThemeChange);
-            setIsReady(true);
 
             return () => {
                 webApp.offEvent('themeChanged', handleThemeChange);
             };
-        } else {
-            // Dev mode
-            setIsReady(true);
         }
     }, []);
 
@@ -57,19 +61,25 @@ export function useTelegram() {
  * Hook для MainButton
  * Используем useRef для стабильного callback, чтобы избежать лишних перерендеров
  */
-export function useMainButton(
+export function useMainButton(props: {
     text: string,
     onClick: () => void,
     options?: {
         enabled?: boolean;
         loading?: boolean;
     }
-) {
+}) {
+    const { text, onClick, options } = props;
+
     const { enabled = true, loading = false } = options ?? {};
 
     // Храним актуальный callback в ref, чтобы не пересоздавать обработчик
     const callbackRef = useRef(onClick);
-    callbackRef.current = onClick;
+
+    // Обновляем ref в useEffect, а не во время рендера
+    useEffect(() => {
+        callbackRef.current = onClick;
+    });
 
     // Стабильный обработчик, который вызывает актуальный callback из ref
     const stableCallback = useCallback(() => {
@@ -106,7 +116,11 @@ export function useMainButton(
 export function useBackButton(onClick: () => void, enabled = true) {
     // Храним актуальный callback в ref
     const callbackRef = useRef(onClick);
-    callbackRef.current = onClick;
+
+    // Обновляем ref в useEffect, а не во время рендера
+    useEffect(() => {
+        callbackRef.current = onClick;
+    });
 
     // Стабильный обработчик
     const stableCallback = useCallback(() => {
