@@ -129,7 +129,10 @@ export const playHandlers = [
      */
     http.get(`${API_URL}/api/play/:slug/session`, ({ params }) => {
         const { slug } = params;
+        console.log('[MSW] GET /api/play/:slug/session', { slug });
+
         const test = mockStore.findTestBySlug(slug as string);
+        console.log('[MSW] Found test:', test?.id);
 
         if (!test) {
             return HttpResponse.json(
@@ -146,24 +149,38 @@ export const playHandlers = [
 
         // Ищем существующую сессию пользователя
         const session = getSessionByUserAndTest(mockUser.id, test.id);
+        console.log('[MSW] Found session:', session?.id, 'completedAt:', session?.completedAt);
 
-        // Если сессия есть и тест не разрешает повторное прохождение, возвращаем её
-        if (session && session.completedAt && !test.allowRetake) {
+        // Если сессия завершена - возвращаем её (для показа результата)
+        if (session && session.completedAt) {
             // Добавляем информацию о результате
             const result = test.results.find((r) => r.id === session.resultId);
+
+            // Добавляем детальную информацию об ответах для отображения результата
+            const answersWithDetails = session.answers?.map((ua) => {
+                const question = test.questions.find((q) => q.id === ua.questionId);
+                const answer = question?.answers.find((a) => a.id === ua.answerId);
+                return {
+                    questionId: ua.questionId,
+                    answerId: ua.answerId,
+                    question,
+                    answer,
+                };
+            });
 
             const response: ApiResponse<UserSession> = {
                 success: true,
                 data: {
                     ...session,
                     result: result || null,
+                    answers: answersWithDetails || session.answers,
                 },
             };
 
             return HttpResponse.json(response, { status: 200 });
         }
 
-        // Сессии нет или можно пройти заново
+        // Сессии нет или она не завершена
         const response: ApiResponse<null> = {
             success: true,
             data: null,
@@ -231,7 +248,11 @@ export const playHandlers = [
      */
     http.post(`${API_URL}/api/play/:slug/submit`, async ({ params, request }) => {
         const { slug } = params;
+        console.log('[MSW] POST /api/play/:slug/submit', { slug });
+
         const body = (await request.json()) as SubmitAnswersInput;
+        console.log('[MSW] Submit body:', body);
+
         const test = mockStore.findTestBySlug(slug as string);
 
         if (!test) {
@@ -249,10 +270,12 @@ export const playHandlers = [
 
         // Находим активную сессию
         let session = getSessionByUserAndTest(mockUser.id, test.id);
+        console.log('[MSW] Existing session for submit:', session?.id, 'completedAt:', session?.completedAt);
 
         if (!session || session.completedAt) {
             // Создаём новую сессию если нет активной
             session = createSession(mockUser.id, test.id);
+            console.log('[MSW] Created new session:', session.id);
         }
 
         // Вычисляем результат в зависимости от типа теста
@@ -277,8 +300,9 @@ export const playHandlers = [
             }
         }
 
-        // Завершаем сессию
-        const completedSession = completeSession(session.id, resultId, score, maxScore);
+        // Завершаем сессию (сохраняем ответы для последующего получения)
+        const completedSession = completeSession(session.id, resultId, score, maxScore, body.answers);
+        console.log('[MSW] Completed session:', completedSession?.id, 'score:', score, 'maxScore:', maxScore);
 
         if (!completedSession) {
             return HttpResponse.json(

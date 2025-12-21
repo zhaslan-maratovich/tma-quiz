@@ -2,7 +2,7 @@
  * Hook для работы с Telegram WebApp
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
     getTelegramWebApp,
     getInitData,
@@ -55,6 +55,7 @@ export function useTelegram() {
 
 /**
  * Hook для MainButton
+ * Используем useRef для стабильного callback, чтобы избежать лишних перерендеров
  */
 export function useMainButton(
     text: string,
@@ -66,13 +67,22 @@ export function useMainButton(
 ) {
     const { enabled = true, loading = false } = options ?? {};
 
+    // Храним актуальный callback в ref, чтобы не пересоздавать обработчик
+    const callbackRef = useRef(onClick);
+    callbackRef.current = onClick;
+
+    // Стабильный обработчик, который вызывает актуальный callback из ref
+    const stableCallback = useCallback(() => {
+        callbackRef.current();
+    }, []);
+
     useEffect(() => {
         if (!enabled) {
             hideMainButton();
             return;
         }
 
-        showMainButton(text, onClick);
+        showMainButton(text, stableCallback);
 
         const webApp = getTelegramWebApp();
         if (webApp) {
@@ -86,25 +96,35 @@ export function useMainButton(
         return () => {
             hideMainButton();
         };
-    }, [text, onClick, enabled, loading]);
+    }, [text, stableCallback, enabled, loading]);
 }
 
 /**
  * Hook для BackButton
+ * Используем useRef для стабильного callback
  */
 export function useBackButton(onClick: () => void, enabled = true) {
+    // Храним актуальный callback в ref
+    const callbackRef = useRef(onClick);
+    callbackRef.current = onClick;
+
+    // Стабильный обработчик
+    const stableCallback = useCallback(() => {
+        callbackRef.current();
+    }, []);
+
     useEffect(() => {
         if (!enabled) {
             hideBackButton();
             return;
         }
 
-        showBackButton(onClick);
+        showBackButton(stableCallback);
 
         return () => {
             hideBackButton();
         };
-    }, [onClick, enabled]);
+    }, [stableCallback, enabled]);
 }
 
 /**
