@@ -3,7 +3,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { useTests, useDeleteTest } from '@/hooks/useTests';
+import { useTestsListQuery, useDeleteTestMutation } from '@/hooks/useTests';
 import { useAuth } from '@/hooks/useAuth';
 import { haptic, showConfirm } from '@/lib/telegram';
 import { HomePageView } from './HomePage.view';
@@ -11,8 +11,8 @@ import { HomePageView } from './HomePage.view';
 export function HomePage() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { data: tests, isLoading, error } = useTests();
-    const deleteTest = useDeleteTest();
+    const { data: tests, isLoading, error } = useTestsListQuery();
+    const deleteTest = useDeleteTestMutation();
 
     const greeting = user?.firstName ? `Привет, ${user.firstName}!` : 'Привет!';
 

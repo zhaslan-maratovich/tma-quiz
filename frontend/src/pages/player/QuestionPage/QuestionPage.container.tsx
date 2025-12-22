@@ -5,7 +5,7 @@
 import { useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
-import { useBackButton, useHaptic, useSubmitAnswers } from '@/hooks';
+import { useBackButton, useHaptic, useSubmitAnswersMutation } from '@/hooks';
 import { QuestionPageView } from './QuestionPage.view';
 import type { PlayAnswer } from '@/types';
 
@@ -35,7 +35,7 @@ export function QuestionPage() {
     const isLastQuestion = test ? currentQuestionIndex === test.questions.length - 1 : false;
 
     // Используем централизованный хук для отправки ответов
-    const submitMutation = useSubmitAnswers(slug);
+    const submitMutation = useSubmitAnswersMutation(slug);
 
     // Save progress periodically
     useEffect(() => {

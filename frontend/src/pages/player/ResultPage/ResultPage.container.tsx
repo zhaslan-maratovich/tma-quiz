@@ -4,7 +4,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
-import { useHaptic, usePlayTest, useExistingSession } from '@/hooks';
+import { useHaptic, usePlayTestQuery, usePlaySessionQuery } from '@/hooks';
 import { openTelegramLink, showAlert } from '@/lib/telegram';
 import { ResultPageView } from './ResultPage.view';
 
@@ -16,8 +16,8 @@ export function ResultPage() {
     const { reset, clearProgress } = usePlayStore();
 
     // Используем централизованные хуки для запросов
-    const { data: session, isLoading } = useExistingSession(slug);
-    const { data: test } = usePlayTest(slug);
+    const { data: session, isLoading } = usePlaySessionQuery(slug);
+    const { data: test } = usePlayTestQuery(slug);
 
     const canRetake = test?.allowRetake ?? false;
 

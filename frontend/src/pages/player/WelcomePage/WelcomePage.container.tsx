@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
-import { useMainButton, useHaptic, usePlayTest, useExistingSession, useStartTest } from '@/hooks';
+import { useMainButton, useHaptic, usePlayTestQuery, usePlaySessionQuery, useStartTestMutation } from '@/hooks';
 import { WelcomePageView } from './WelcomePage.view';
 
 export function WelcomePage() {
@@ -16,11 +16,11 @@ export function WelcomePage() {
     const { setTest, startTest, loadProgress } = usePlayStore();
 
     // Используем централизованные хуки для запросов
-    const { data: testData, isLoading: isTestLoading, error: testError } = usePlayTest(slug);
-    const { data: existingSession } = useExistingSession(slug);
+    const { data: testData, isLoading: isTestLoading, error: testError } = usePlayTestQuery(slug);
+    const { data: existingSession } = usePlaySessionQuery(slug);
 
     // Мутация для начала теста
-    const startTestMutation = useStartTest(slug);
+    const startTestMutation = useStartTestMutation(slug);
 
     // Load saved progress when test data is available
     useEffect(() => {

@@ -1,5 +1,9 @@
 /**
  * Hooks для прохождения тестов (play)
+ *
+ * Конвенция именования:
+ * - use<Entity>Query — для GET запросов (React Query)
+ * - use<Action><Entity>Mutation — для мутаций (создание, обновление, удаление)
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,18 +14,18 @@ import type { SubmitAnswersInput } from '@/types';
  * Query keys для play API
  * Централизованное место для управления ключами кэша
  */
-export const playKeys = {
+export const playQueryKeys = {
     all: ['play'] as const,
     test: (slug: string) => ['play', slug] as const,
     session: (slug: string) => ['play', slug, 'session'] as const,
 };
 
 /**
- * Hook для получения теста по slug (для прохождения)
+ * Query: Получение теста по slug (для прохождения)
  */
-export function usePlayTest(slug: string | undefined) {
+export function usePlayTestQuery(slug: string | undefined) {
     return useQuery({
-        queryKey: playKeys.test(slug!),
+        queryKey: playQueryKeys.test(slug!),
         queryFn: () => playApi.getTestBySlug(slug!),
         enabled: Boolean(slug),
         staleTime: 1000 * 60, // 1 минута
@@ -29,11 +33,11 @@ export function usePlayTest(slug: string | undefined) {
 }
 
 /**
- * Hook для проверки существующей сессии пользователя
+ * Query: Проверка существующей сессии пользователя
  */
-export function useExistingSession(slug: string | undefined) {
+export function usePlaySessionQuery(slug: string | undefined) {
     return useQuery({
-        queryKey: playKeys.session(slug!),
+        queryKey: playQueryKeys.session(slug!),
         queryFn: () => playApi.getExistingSession(slug!),
         enabled: Boolean(slug),
         staleTime: 1000 * 30, // 30 секунд
@@ -41,9 +45,9 @@ export function useExistingSession(slug: string | undefined) {
 }
 
 /**
- * Hook для начала прохождения теста
+ * Mutation: Начало прохождения теста
  */
-export function useStartTest(slug: string | undefined) {
+export function useStartTestMutation(slug: string | undefined) {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -51,16 +55,16 @@ export function useStartTest(slug: string | undefined) {
         onSuccess: () => {
             // Инвалидируем сессию, чтобы перезапросить при необходимости
             if (slug) {
-                queryClient.invalidateQueries({ queryKey: playKeys.session(slug) });
+                queryClient.invalidateQueries({ queryKey: playQueryKeys.session(slug) });
             }
         },
     });
 }
 
 /**
- * Hook для отправки ответов и завершения теста
+ * Mutation: Отправка ответов и завершение теста
  */
-export function useSubmitAnswers(slug: string | undefined) {
+export function useSubmitAnswersMutation(slug: string | undefined) {
     const queryClient = useQueryClient();
 
     return useMutation({
@@ -68,7 +72,7 @@ export function useSubmitAnswers(slug: string | undefined) {
         onSuccess: (session) => {
             if (slug) {
                 // Обновляем кэш сессии с новыми данными
-                queryClient.setQueryData(playKeys.session(slug), session);
+                queryClient.setQueryData(playQueryKeys.session(slug), session);
             }
         },
     });
@@ -79,8 +83,8 @@ export function useSubmitAnswers(slug: string | undefined) {
  * Объединяет загрузку теста и проверку сессии
  */
 export function useWelcomePageData(slug: string | undefined) {
-    const testQuery = usePlayTest(slug);
-    const sessionQuery = useExistingSession(slug);
+    const testQuery = usePlayTestQuery(slug);
+    const sessionQuery = usePlaySessionQuery(slug);
 
     return {
         test: testQuery.data,

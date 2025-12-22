@@ -1,5 +1,9 @@
 /**
- * Hooks для работы с тестами
+ * Hooks для работы с тестами (CRUD операции для создателей)
+ *
+ * Конвенция именования:
+ * - use<Entity>Query / use<Entity>ListQuery — для GET запросов
+ * - use<Action><Entity>Mutation — для мутаций
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,94 +11,126 @@ import { testsApi } from '@/api';
 import type { CreateTestInput, UpdateTestInput } from '@/types';
 
 /**
- * Hook для получения списка тестов
+ * Query keys для tests API
  */
-export function useTests() {
+export const testsQueryKeys = {
+    all: ['tests'] as const,
+    list: () => ['tests'] as const,
+    detail: (id: string) => ['tests', id] as const,
+    analytics: (id: string) => ['tests', id, 'analytics'] as const,
+};
+
+/**
+ * Query: Получение списка тестов
+ */
+export function useTestsListQuery() {
     return useQuery({
-        queryKey: ['tests'],
+        queryKey: testsQueryKeys.list(),
         queryFn: testsApi.getTests,
         staleTime: 1000 * 60, // 1 минута
     });
 }
 
 /**
- * Hook для получения теста по ID
+ * Query: Получение теста по ID
  */
-export function useTest(id: string) {
+export function useTestQuery(id: string | undefined) {
     return useQuery({
-        queryKey: ['tests', id],
-        queryFn: () => testsApi.getTestById(id),
-        enabled: !!id,
+        queryKey: testsQueryKeys.detail(id!),
+        queryFn: () => testsApi.getTestById(id!),
+        enabled: Boolean(id),
         staleTime: 1000 * 30, // 30 секунд
     });
 }
 
 /**
- * Hook для создания теста
+ * Query: Получение аналитики теста
  */
-export function useCreateTest() {
+export function useTestAnalyticsQuery(id: string | undefined) {
+    return useQuery({
+        queryKey: testsQueryKeys.analytics(id!),
+        queryFn: () => testsApi.getTestAnalytics(id!),
+        enabled: Boolean(id),
+        staleTime: 1000 * 60 * 5, // 5 минут
+    });
+}
+
+/**
+ * Mutation: Создание теста
+ */
+export function useCreateTestMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (data: CreateTestInput) => testsApi.createTest(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['tests'] });
+            queryClient.invalidateQueries({ queryKey: testsQueryKeys.list() });
         },
     });
 }
 
 /**
- * Hook для обновления теста
+ * Mutation: Обновление теста
  */
-export function useUpdateTest(id: string) {
+export function useUpdateTestMutation(id: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (data: UpdateTestInput) => testsApi.updateTest(id, data),
         onSuccess: (updatedTest) => {
-            queryClient.setQueryData(['tests', id], updatedTest);
-            queryClient.invalidateQueries({ queryKey: ['tests'] });
+            queryClient.setQueryData(testsQueryKeys.detail(id), updatedTest);
+            queryClient.invalidateQueries({ queryKey: testsQueryKeys.list() });
         },
     });
 }
 
 /**
- * Hook для удаления теста
+ * Mutation: Удаление теста
  */
-export function useDeleteTest() {
+export function useDeleteTestMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (id: string) => testsApi.deleteTest(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['tests'] });
+            queryClient.invalidateQueries({ queryKey: testsQueryKeys.list() });
         },
     });
 }
 
 /**
- * Hook для публикации теста
+ * Mutation: Публикация теста
  */
-export function usePublishTest() {
+export function usePublishTestMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (id: string) => testsApi.publishTest(id),
         onSuccess: (publishedTest) => {
-            queryClient.setQueryData(['tests', publishedTest.id], publishedTest);
-            queryClient.invalidateQueries({ queryKey: ['tests'] });
+            queryClient.setQueryData(testsQueryKeys.detail(publishedTest.id), publishedTest);
+            queryClient.invalidateQueries({ queryKey: testsQueryKeys.list() });
         },
     });
 }
 
-/**
- * Hook для получения аналитики теста
- */
-export function useTestAnalytics(id: string) {
-    return useQuery({
-        queryKey: ['tests', id, 'analytics'],
-        queryFn: () => testsApi.getTestAnalytics(id),
-        enabled: !!id,
-        staleTime: 1000 * 60 * 5, // 5 минут
-    });
-}
+// =============================================================================
+// Алиасы для обратной совместимости (deprecated, будут удалены)
+// =============================================================================
+
+/** @deprecated Используйте useTestQuery */
+export const useTest = useTestQuery;
+
+/** @deprecated Используйте useCreateTestMutation */
+export const useCreateTest = useCreateTestMutation;
+
+/** @deprecated Используйте useUpdateTestMutation */
+export const useUpdateTest = useUpdateTestMutation;
+
+/** @deprecated Используйте useDeleteTestMutation */
+export const useDeleteTest = useDeleteTestMutation;
+
+/** @deprecated Используйте usePublishTestMutation */
+export const usePublishTest = usePublishTestMutation;
+
+/** @deprecated Используйте useTestAnalyticsQuery */
+export const useTestAnalytics = useTestAnalyticsQuery;
