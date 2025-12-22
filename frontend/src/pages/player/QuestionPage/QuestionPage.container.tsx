@@ -5,7 +5,7 @@
 import { useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
-import { useBackButton, useHaptic, useSubmitAnswersMutation } from '@/hooks';
+import { useBackButton, useHaptic, useSubmitAnswersMutation, usePlayTestQuery } from '@/hooks';
 import { QuestionPageView } from './QuestionPage.view';
 import type { PlayAnswer } from '@/types';
 
@@ -16,6 +16,7 @@ export function QuestionPage() {
 
     const {
         test,
+        setTest,
         currentQuestionIndex,
         answers,
         getCurrentQuestion,
@@ -29,10 +30,23 @@ export function QuestionPage() {
         completeTest,
     } = usePlayStore();
 
+    // Загружаем тест если его нет в store (например, при прямом переходе или перезагрузке)
+    const { data: testData, isLoading: isTestLoading } = usePlayTestQuery(slug);
+
+    // Синхронизируем тест в store когда он загружен
+    useEffect(() => {
+        if (testData && !test) {
+            setTest(testData);
+        }
+    }, [testData, test, setTest]);
+
+    // Используем тест из store или из query
+    const activeTest = test ?? testData;
+
     const currentQuestion = getCurrentQuestion();
     const selectedAnswerId = currentQuestion ? getSelectedAnswer(currentQuestion.id) : null;
     const progress = getProgress();
-    const isLastQuestion = test ? currentQuestionIndex === test.questions.length - 1 : false;
+    const isLastQuestion = activeTest ? currentQuestionIndex === activeTest.questions.length - 1 : false;
 
     // Используем централизованный хук для отправки ответов
     const submitMutation = useSubmitAnswersMutation(slug);
@@ -57,12 +71,16 @@ export function QuestionPage() {
         true
     );
 
-    // Redirect if no test
+    // Redirect if no test data available after loading
     useEffect(() => {
-        if (!test) {
+        // Ждём пока загрузка завершится
+        if (isTestLoading) return;
+
+        // Если тест не загружен и не в store - редиректим
+        if (!activeTest) {
             navigate(`/play/${slug}`);
         }
-    }, [test, navigate, slug]);
+    }, [activeTest, isTestLoading, navigate, slug]);
 
     const handleSelectAnswer = (answer: PlayAnswer) => {
         if (!currentQuestion) return;
@@ -101,12 +119,17 @@ export function QuestionPage() {
         }
     };
 
+    // Показываем загрузку пока тест не готов
+    if (isTestLoading || !activeTest) {
+        return <QuestionPageView.Skeleton />;
+    }
+
     return (
         <QuestionPageView
-            test={test}
+            test={activeTest}
             currentQuestion={currentQuestion}
             currentIndex={currentQuestionIndex}
-            totalQuestions={test?.questions.length || 0}
+            totalQuestions={activeTest.questions.length}
             progress={progress}
             selectedAnswerId={selectedAnswerId}
             canGoBack={canGoPrevious()}

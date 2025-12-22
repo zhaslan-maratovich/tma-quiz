@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageContainer } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { cn } from '@/lib/utils';
 import type { QuestionPageViewProps } from './QuestionPage.types';
 
@@ -179,3 +180,40 @@ export function QuestionPageView({
         </PageContainer>
     );
 }
+
+QuestionPageView.Skeleton = function QuestionPageSkeleton() {
+    return (
+        <PageContainer noPadding>
+            <div className="flex flex-col min-h-screen">
+                {/* Header skeleton */}
+                <div className="sticky top-0 z-10 bg-tg-bg/80 backdrop-blur-xl border-b border-tg-separator safe-area-top">
+                    <div className="px-4 py-3">
+                        <div className="flex items-center justify-between mb-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-4 w-10" />
+                        </div>
+                        <Skeleton className="h-2 w-full rounded-full" />
+                    </div>
+                </div>
+
+                {/* Question skeleton */}
+                <div className="flex-1 px-4 py-6">
+                    <Skeleton className="h-8 w-3/4 mb-6" />
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4].map((i) => (
+                            <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Bottom skeleton */}
+                <div className="sticky bottom-0 bg-tg-bg/80 backdrop-blur-xl border-t border-tg-separator safe-area-bottom">
+                    <div className="px-4 py-4 flex gap-3">
+                        <Skeleton className="h-12 w-14 rounded-xl" />
+                        <Skeleton className="h-12 flex-1 rounded-xl" />
+                    </div>
+                </div>
+            </div>
+        </PageContainer>
+    );
+};
