@@ -3,10 +3,8 @@
  */
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { playApi } from '@/api';
 import { usePlayStore } from '@/stores/playStore';
-import { useHaptic } from '@/hooks/useTelegram';
+import { useHaptic, usePlayTest, useExistingSession } from '@/hooks';
 import { openTelegramLink, showAlert } from '@/lib/telegram';
 import { ResultPageView } from './ResultPage.view';
 
@@ -17,19 +15,9 @@ export function ResultPage() {
 
     const { reset, clearProgress } = usePlayStore();
 
-    // Fetch session with result
-    const { data: session, isLoading } = useQuery({
-        queryKey: ['play', slug, 'session'],
-        queryFn: () => playApi.getExistingSession(slug!),
-        enabled: !!slug,
-    });
-
-    // Fetch test for retake check
-    const { data: test } = useQuery({
-        queryKey: ['play', slug],
-        queryFn: () => playApi.getTestBySlug(slug!),
-        enabled: !!slug,
-    });
+    // Используем централизованные хуки для запросов
+    const { data: session, isLoading } = useExistingSession(slug);
+    const { data: test } = usePlayTest(slug);
 
     const canRetake = test?.allowRetake ?? false;
 

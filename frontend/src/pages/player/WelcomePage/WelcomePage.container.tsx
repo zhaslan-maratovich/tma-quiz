@@ -4,10 +4,8 @@
 
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { playApi } from '@/api';
 import { usePlayStore } from '@/stores/playStore';
-import { useMainButton, useHaptic } from '@/hooks/useTelegram';
+import { useMainButton, useHaptic, usePlayTest, useExistingSession, useStartTest } from '@/hooks';
 import { WelcomePageView } from './WelcomePage.view';
 
 export function WelcomePage() {
@@ -17,54 +15,36 @@ export function WelcomePage() {
 
     const { setTest, startTest, loadProgress } = usePlayStore();
 
-    // Fetch test data
-    const {
-        data: testData,
-        isLoading: isTestLoading,
-        error: testError,
-    } = useQuery({
-        queryKey: ['play', slug],
-        queryFn: () => playApi.getTestBySlug(slug!),
-        enabled: Boolean(slug),
-    });
+    // Используем централизованные хуки для запросов
+    const { data: testData, isLoading: isTestLoading, error: testError } = usePlayTest(slug);
+    const { data: existingSession } = useExistingSession(slug);
 
-    // Check existing session
-    const { data: existingSession } = useQuery({
-        queryKey: ['play', slug, 'session'],
-        queryFn: () => playApi.getExistingSession(slug!),
-        enabled: Boolean(slug),
-    });
+    // Мутация для начала теста
+    const startTestMutation = useStartTest(slug);
 
-    // Start test mutation
-    const startTestMutation = useMutation({
-        mutationFn: () => playApi.startTest(slug!),
-        onSuccess: (result) => {
-            if (result.sessionId) {
-                if (testData) {
-                    setTest(testData);
-                }
-                startTest();
-                haptic.notification('success');
-                navigate(`/play/${slug}/question`);
-            }
-        },
-        onError: (error) => {
-            console.error('Start test error:', error);
-            haptic.notification('error');
-        },
-    });
-
-    // Set test data to store
+    // Load saved progress when test data is available
     useEffect(() => {
-        if (testData) {
+        if (testData && slug) {
             setTest(testData);
-            loadProgress(slug!);
+            loadProgress(slug);
         }
-    }, [testData, setTest, loadProgress, slug]);
+    }, [testData, slug, setTest, loadProgress]);
 
     const handleStart = () => {
         haptic.impact('medium');
-        startTestMutation.mutate();
+        startTestMutation.mutate(undefined, {
+            onSuccess: (result) => {
+                if (result.sessionId) {
+                    startTest();
+                    haptic.notification('success');
+                    navigate(`/play/${slug}/question`);
+                }
+            },
+            onError: (error) => {
+                console.error('Start test error:', error);
+                haptic.notification('error');
+            },
+        });
     };
 
     const handleViewResult = () => {

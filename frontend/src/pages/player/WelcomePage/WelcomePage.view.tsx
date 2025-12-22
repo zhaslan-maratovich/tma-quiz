@@ -19,6 +19,8 @@ export function WelcomePageView({
     // isStarting и onStart не используются - кнопка через Telegram MainButton
     onViewResult,
 }: WelcomePageViewProps) {
+    console.log('render WelcomePageView');
+
     if (isLoading) {
         return (
             <PageContainer>

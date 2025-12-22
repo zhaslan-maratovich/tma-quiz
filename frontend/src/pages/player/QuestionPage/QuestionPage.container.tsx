@@ -4,10 +4,8 @@
 
 import { useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
-import { playApi } from '@/api';
 import { usePlayStore } from '@/stores/playStore';
-import { useBackButton, useHaptic } from '@/hooks/useTelegram';
+import { useBackButton, useHaptic, useSubmitAnswers } from '@/hooks';
 import { QuestionPageView } from './QuestionPage.view';
 import type { PlayAnswer } from '@/types';
 
@@ -36,18 +34,8 @@ export function QuestionPage() {
     const progress = getProgress();
     const isLastQuestion = test ? currentQuestionIndex === test.questions.length - 1 : false;
 
-    // Submit mutation
-    const submitMutation = useMutation({
-        mutationFn: () => playApi.submitAnswers(slug!, { answers }),
-        onSuccess: () => {
-            completeTest();
-            haptic.notification('success');
-            navigate(`/play/${slug}/result`);
-        },
-        onError: () => {
-            haptic.notification('error');
-        },
-    });
+    // Используем централизованный хук для отправки ответов
+    const submitMutation = useSubmitAnswers(slug);
 
     // Save progress periodically
     useEffect(() => {
@@ -88,7 +76,19 @@ export function QuestionPage() {
         haptic.impact('light');
 
         if (isLastQuestion) {
-            submitMutation.mutate();
+            submitMutation.mutate(
+                { answers },
+                {
+                    onSuccess: () => {
+                        completeTest();
+                        haptic.notification('success');
+                        navigate(`/play/${slug}/result`);
+                    },
+                    onError: () => {
+                        haptic.notification('error');
+                    },
+                }
+            );
         } else {
             nextQuestion();
         }
