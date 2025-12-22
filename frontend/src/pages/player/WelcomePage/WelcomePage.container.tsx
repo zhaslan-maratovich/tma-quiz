@@ -2,7 +2,7 @@
  * WelcomePage Container - компонент с логикой
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
 import {
@@ -28,8 +28,9 @@ export function WelcomePage() {
     // Мутация для начала теста
     const startTestMutation = useStartTestMutation(slug);
 
-    // Флаг для предотвращения двойной навигации
+    // Флаг для предотвращения двойной навигации (ref + state для ререндера)
     const isNavigatingRef = useRef(false);
+    const [isNavigating, setIsNavigating] = useState(false);
 
     // Load saved progress when test data is available
     useEffect(() => {
@@ -43,6 +44,7 @@ export function WelcomePage() {
         if (startTestMutation.isPending || isNavigatingRef.current) return;
 
         isNavigatingRef.current = true;
+        setIsNavigating(true); // Вызовет ререндер и отключит MainButton
         haptic.impact('medium');
 
         startTestMutation.mutate(undefined, {
@@ -55,24 +57,19 @@ export function WelcomePage() {
                     const targetUrl = `/play/${slug}/question`;
                     console.log('[WelcomePage] Navigating to:', targetUrl);
 
-                    // Пробуем разные способы навигации
-                    try {
-                        navigate(targetUrl, { replace: true });
-                        console.log('[WelcomePage] navigate() called');
-                    } catch (e) {
-                        console.error('[WelcomePage] navigate() failed:', e);
-                        // Fallback: прямой переход
-                        window.location.href = targetUrl;
-                    }
+                    navigate(targetUrl, { replace: true });
+                    console.log('[WelcomePage] navigate() called');
                 } else {
                     console.warn('[WelcomePage] No sessionId in result');
                     isNavigatingRef.current = false;
+                    setIsNavigating(false);
                 }
             },
             onError: (error) => {
                 console.error('[WelcomePage] Start test error:', error);
                 haptic.notification('error');
                 isNavigatingRef.current = false;
+                setIsNavigating(false);
             },
         });
     };
@@ -88,13 +85,15 @@ export function WelcomePage() {
     const canRetake = sessionResponse?.canRetake ?? testData?.allowRetake ?? false;
     const isViewResult = hasCompletedSession && !canRetake;
 
-    // Use Telegram MainButton
+    // Use Telegram MainButton - отключаем при навигации
     useMainButton({
         text: isViewResult
             ? 'Посмотреть результат'
             : testData?.welcomeScreen?.buttonText || 'Начать',
         onClick: isViewResult ? handleViewResult : handleStart,
-        options: { enabled: Boolean(testData) && !isTestLoading && !startTestMutation.isPending },
+        options: {
+            enabled: Boolean(testData) && !isTestLoading && !startTestMutation.isPending && !isNavigating,
+        },
     });
 
     if (isTestLoading) {
