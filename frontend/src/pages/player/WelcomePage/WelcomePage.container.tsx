@@ -47,17 +47,30 @@ export function WelcomePage() {
 
         startTestMutation.mutate(undefined, {
             onSuccess: (result) => {
+                console.log('[WelcomePage] Start test success:', result);
                 if (result.sessionId) {
                     startTest();
                     haptic.notification('success');
-                    // Прямая навигация в onSuccess - без invalidateQueries в мутации
-                    navigate(`/play/${slug}/question`, { replace: true });
+
+                    const targetUrl = `/play/${slug}/question`;
+                    console.log('[WelcomePage] Navigating to:', targetUrl);
+
+                    // Пробуем разные способы навигации
+                    try {
+                        navigate(targetUrl, { replace: true });
+                        console.log('[WelcomePage] navigate() called');
+                    } catch (e) {
+                        console.error('[WelcomePage] navigate() failed:', e);
+                        // Fallback: прямой переход
+                        window.location.href = targetUrl;
+                    }
                 } else {
+                    console.warn('[WelcomePage] No sessionId in result');
                     isNavigatingRef.current = false;
                 }
             },
             onError: (error) => {
-                console.error('Start test error:', error);
+                console.error('[WelcomePage] Start test error:', error);
                 haptic.notification('error');
                 isNavigatingRef.current = false;
             },
