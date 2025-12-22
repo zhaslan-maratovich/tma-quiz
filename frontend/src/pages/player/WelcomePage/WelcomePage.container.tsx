@@ -2,7 +2,7 @@
  * WelcomePage Container - компонент с логикой
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
 import {
@@ -28,6 +28,9 @@ export function WelcomePage() {
     // Мутация для начала теста
     const startTestMutation = useStartTestMutation(slug);
 
+    // Флаг для предотвращения двойной навигации
+    const isNavigatingRef = useRef(false);
+
     // Load saved progress when test data is available
     useEffect(() => {
         if (testData && slug) {
@@ -36,16 +39,23 @@ export function WelcomePage() {
         }
     }, [testData, slug, setTest, loadProgress]);
 
+    // Навигация после успешного старта теста
+    useEffect(() => {
+        if (startTestMutation.isSuccess && startTestMutation.data?.sessionId && !isNavigatingRef.current) {
+            isNavigatingRef.current = true;
+            startTest();
+            haptic.notification('success');
+            // Используем setTimeout для гарантии что навигация произойдёт после рендера
+            setTimeout(() => {
+                navigate(`/play/${slug}/question`, { replace: true });
+            }, 0);
+        }
+    }, [startTestMutation.isSuccess, startTestMutation.data, startTest, haptic, navigate, slug]);
+
     const handleStart = () => {
+        if (startTestMutation.isPending || isNavigatingRef.current) return;
         haptic.impact('medium');
         startTestMutation.mutate(undefined, {
-            onSuccess: (result) => {
-                if (result.sessionId) {
-                    startTest();
-                    haptic.notification('success');
-                    navigate(`/play/${slug}/question`);
-                }
-            },
             onError: (error) => {
                 console.error('Start test error:', error);
                 haptic.notification('error');
