@@ -33,9 +33,17 @@ export function QuestionPage() {
     // Загружаем тест если его нет в store (например, при прямом переходе или перезагрузке)
     const { data: testData, isLoading: isTestLoading } = usePlayTestQuery(slug);
 
+    console.log('[QuestionPage] Render:', {
+        testInStore: !!test,
+        testData: !!testData,
+        isTestLoading,
+        currentQuestionIndex,
+    });
+
     // Синхронизируем тест в store когда он загружен
     useEffect(() => {
         if (testData && !test) {
+            console.log('[QuestionPage] Setting test from query to store');
             setTest(testData);
         }
     }, [testData, test, setTest]);
@@ -73,15 +81,16 @@ export function QuestionPage() {
 
     // Redirect if no test data available after loading
     useEffect(() => {
+        // Если тест уже есть - не редиректим
+        if (activeTest) return;
+
         // Ждём пока загрузка завершится
         if (isTestLoading) return;
 
         // Если тест не загружен и не в store - редиректим
-        if (!activeTest) {
-            navigate(`/play/${slug}`);
-        }
+        console.log('[QuestionPage] No test data, redirecting to welcome');
+        navigate(`/play/${slug}`, { replace: true });
     }, [activeTest, isTestLoading, navigate, slug]);
-
     const handleSelectAnswer = (answer: PlayAnswer) => {
         if (!currentQuestion) return;
         haptic.selection();
@@ -119,8 +128,12 @@ export function QuestionPage() {
         }
     };
 
-    // Показываем загрузку пока тест не готов
-    if (isTestLoading || !activeTest) {
+    // Показываем загрузку только если нет теста в store И идёт загрузка
+    if (!activeTest) {
+        if (isTestLoading) {
+            return <QuestionPageView.Skeleton />;
+        }
+        // Если не загружается и нет теста - useEffect сделает редирект
         return <QuestionPageView.Skeleton />;
     }
 
