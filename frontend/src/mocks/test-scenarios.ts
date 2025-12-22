@@ -78,7 +78,10 @@ export async function runAllScenarios(): Promise<TestResult[]> {
         results.push({
             scenario: '2. Tests - Get All',
             success: true,
-            data: { count: tests.length, tests: tests.map((t) => ({ id: t.id, title: t.welcomeScreen?.title })) },
+            data: {
+                count: tests.length,
+                tests: tests.map((t) => ({ id: t.id, title: t.welcomeScreen?.title })),
+            },
         });
         console.log('✅ 2. Tests - Get All:', tests.length, 'tests');
     } catch (error) {

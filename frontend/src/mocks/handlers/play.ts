@@ -4,7 +4,12 @@
 
 import { http, HttpResponse } from 'msw';
 import { testToPlayTest, mockUser, mockStore } from '../data';
-import { createSession, getSessionByUserAndTest, completeSession, mockSessions } from '../data/sessions';
+import {
+    createSession,
+    getSessionByUserAndTest,
+    completeSession,
+    mockSessions,
+} from '../data/sessions';
 import type { ApiResponse, PlayTest, UserSession, SubmitAnswersInput, Test } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -270,7 +275,12 @@ export const playHandlers = [
 
         // Находим активную сессию
         let session = getSessionByUserAndTest(mockUser.id, test.id);
-        console.log('[MSW] Existing session for submit:', session?.id, 'completedAt:', session?.completedAt);
+        console.log(
+            '[MSW] Existing session for submit:',
+            session?.id,
+            'completedAt:',
+            session?.completedAt
+        );
 
         if (!session || session.completedAt) {
             // Создаём новую сессию если нет активной
@@ -301,8 +311,21 @@ export const playHandlers = [
         }
 
         // Завершаем сессию (сохраняем ответы для последующего получения)
-        const completedSession = completeSession(session.id, resultId, score, maxScore, body.answers);
-        console.log('[MSW] Completed session:', completedSession?.id, 'score:', score, 'maxScore:', maxScore);
+        const completedSession = completeSession(
+            session.id,
+            resultId,
+            score,
+            maxScore,
+            body.answers
+        );
+        console.log(
+            '[MSW] Completed session:',
+            completedSession?.id,
+            'score:',
+            score,
+            'maxScore:',
+            maxScore
+        );
 
         if (!completedSession) {
             return HttpResponse.json(

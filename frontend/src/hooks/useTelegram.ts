@@ -62,12 +62,12 @@ export function useTelegram() {
  * Используем useRef для стабильного callback, чтобы избежать лишних перерендеров
  */
 export function useMainButton(props: {
-    text: string,
-    onClick: () => void,
+    text: string;
+    onClick: () => void;
     options?: {
         enabled?: boolean;
         loading?: boolean;
-    }
+    };
 }) {
     const { text, onClick, options } = props;
 

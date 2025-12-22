@@ -92,7 +92,9 @@ export const answersHandlers = [
                         imageUrl: body.imageUrl !== undefined ? body.imageUrl : answer.imageUrl,
                         isCorrect: body.isCorrect ?? answer.isCorrect,
                         nextQuestionId:
-                            body.nextQuestionId !== undefined ? body.nextQuestionId : answer.nextQuestionId,
+                            body.nextQuestionId !== undefined
+                                ? body.nextQuestionId
+                                : answer.nextQuestionId,
                         resultId: body.resultId !== undefined ? body.resultId : answer.resultId,
                         resultPoints: body.resultPoints
                             ? body.resultPoints.map((rp) => ({

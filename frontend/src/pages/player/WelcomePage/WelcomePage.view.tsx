@@ -1,5 +1,6 @@
 /**
  * WelcomePage View - презентационный компонент
+ * Принимает только примитивные свойства для отображения
  */
 
 import { motion } from 'framer-motion';
@@ -11,48 +12,23 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { pluralize } from '@/lib/utils';
 import type { WelcomePageViewProps } from './WelcomePage.types';
 
+/** Маппинг типа теста на отображаемый текст */
+const TEST_TYPE_LABELS = {
+    quiz: '📊 Викторина',
+    personality: '🧠 Тест личности',
+    branching: '🌳 Интерактив',
+} as const;
+
 export function WelcomePageView({
-    test,
-    existingSession,
-    isLoading,
-    error,
-    // isStarting и onStart не используются - кнопка через Telegram MainButton
+    testType,
+    title,
+    description,
+    coverImageUrl,
+    questionsCount,
+    canRetake,
+    hasCompletedSession,
     onViewResult,
 }: WelcomePageViewProps) {
-    console.log('render WelcomePageView');
-
-    if (isLoading) {
-        return (
-            <PageContainer>
-                <div className="flex flex-col items-center pt-8">
-                    <Skeleton className="w-full aspect-video rounded-2xl mb-6" />
-                    <Skeleton className="h-8 w-64 mb-3" />
-                    <Skeleton className="h-4 w-48 mb-2" />
-                    <Skeleton className="h-4 w-56" />
-                </div>
-            </PageContainer>
-        );
-    }
-
-    if (error || !test) {
-        return (
-            <PageContainer>
-                <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-tg-destructive/10 flex items-center justify-center mb-4">
-                        <span className="text-3xl">😕</span>
-                    </div>
-                    <h2 className="text-lg font-semibold text-tg-text mb-2">Тест не найден</h2>
-                    <p className="text-sm text-tg-hint">
-                        Возможно, ссылка устарела или тест был удалён
-                    </p>
-                </div>
-            </PageContainer>
-        );
-    }
-
-    const hasCompletedSession = existingSession?.completedAt;
-    const canRetake = test.allowRetake;
-
     return (
         <PageContainer gradient noPadding>
             <div className="flex flex-col min-h-screen">
@@ -62,10 +38,10 @@ export function WelcomePageView({
                     animate={{ opacity: 1, scale: 1 }}
                     className="relative"
                 >
-                    {test.welcomeScreen?.imageUrl ? (
+                    {coverImageUrl ? (
                         <img
-                            src={test.welcomeScreen.imageUrl}
-                            alt={test.welcomeScreen.title}
+                            src={coverImageUrl}
+                            alt={title}
                             className="w-full aspect-[16/9] object-cover"
                         />
                     ) : (
@@ -94,11 +70,7 @@ export function WelcomePageView({
                         transition={{ delay: 0.1 }}
                         className="mb-4"
                     >
-                        <Badge variant="gradient">
-                            {test.type === 'quiz' && '📊 Викторина'}
-                            {test.type === 'personality' && '🧠 Тест личности'}
-                            {test.type === 'branching' && '🌳 Интерактив'}
-                        </Badge>
+                        <Badge variant="gradient">{TEST_TYPE_LABELS[testType]}</Badge>
                     </motion.div>
 
                     {/* Title */}
@@ -108,18 +80,18 @@ export function WelcomePageView({
                         transition={{ delay: 0.2 }}
                         className="text-2xl font-bold text-tg-text mb-3"
                     >
-                        {test.welcomeScreen?.title}
+                        {title}
                     </motion.h1>
 
                     {/* Description */}
-                    {test.welcomeScreen?.description && (
+                    {description && (
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                             className="text-tg-hint mb-6"
                         >
-                            {test.welcomeScreen.description}
+                            {description}
                         </motion.p>
                     )}
 
@@ -131,8 +103,8 @@ export function WelcomePageView({
                         className="flex items-center gap-4 text-sm text-tg-hint"
                     >
                         <span className="flex items-center gap-1.5">
-                            📝 {test.questionsCount}{' '}
-                            {pluralize(test.questionsCount, ['вопрос', 'вопроса', 'вопросов'])}
+                            📝 {questionsCount}{' '}
+                            {pluralize(questionsCount, ['вопрос', 'вопроса', 'вопросов'])}
                         </span>
                     </motion.div>
 
@@ -185,3 +157,32 @@ export function WelcomePageView({
         </PageContainer>
     );
 }
+
+WelcomePageView.Skeleton = function WelcomePageSkeleton() {
+    return (
+        <PageContainer>
+            <div className="flex flex-col items-center pt-8">
+                <Skeleton className="w-full aspect-video rounded-2xl mb-6" />
+                <Skeleton className="h-8 w-64 mb-3" />
+                <Skeleton className="h-4 w-48 mb-2" />
+                <Skeleton className="h-4 w-56" />
+            </div>
+        </PageContainer>
+    );
+};
+
+WelcomePageView.Error = function WelcomePageError() {
+    return (
+        <PageContainer>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div className="w-16 h-16 rounded-2xl bg-tg-destructive/10 flex items-center justify-center mb-4">
+                    <span className="text-3xl">😕</span>
+                </div>
+                <h2 className="text-lg font-semibold text-tg-text mb-2">Тест не найден</h2>
+                <p className="text-sm text-tg-hint">
+                    Возможно, ссылка устарела или тест был удалён
+                </p>
+            </div>
+        </PageContainer>
+    );
+};

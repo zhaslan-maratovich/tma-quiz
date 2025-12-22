@@ -2,26 +2,32 @@
  * Типы для WelcomePage
  */
 
-import type { PlayTest, UserSession } from '@/types';
+import type { TestType } from '@/types';
 
 /**
  * Props для View компонента WelcomePage
+ * Содержит только примитивы, необходимые для отображения
  */
 export interface WelcomePageViewProps {
-    /** Данные теста */
-    test: PlayTest | null;
-    /** Существующая сессия */
-    existingSession: UserSession | null;
-    /** Загрузка */
-    isLoading: boolean;
-    /** Ошибка */
-    error: Error | null;
-    /** Идёт запуск теста */
-    isStarting: boolean;
+    // Данные теста
+    /** Тип теста */
+    testType: TestType;
+    /** Заголовок теста */
+    title: string;
+    /** Описание теста */
+    description?: string;
+    /** URL изображения обложки */
+    coverImageUrl?: string;
+    /** Количество вопросов */
+    questionsCount: number;
+    /** Можно ли пройти тест повторно */
+    canRetake: boolean;
+
+    // Состояние сессии
+    /** Есть завершённая сессия */
+    hasCompletedSession: boolean;
 
     // Колбэки
-    /** Начать тест */
-    onStart: () => void;
-    /** Посмотреть результат */
+    /** Посмотреть результат прошлой сессии */
     onViewResult: () => void;
 }

@@ -5,7 +5,13 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
-import { useMainButton, useHaptic, usePlayTestQuery, usePlaySessionQuery, useStartTestMutation } from '@/hooks';
+import {
+    useMainButton,
+    useHaptic,
+    usePlayTestQuery,
+    usePlaySessionQuery,
+    useStartTestMutation,
+} from '@/hooks';
 import { WelcomePageView } from './WelcomePage.view';
 
 export function WelcomePage() {
@@ -52,23 +58,37 @@ export function WelcomePage() {
         navigate(`/play/${slug}/result`);
     };
 
+    // Вычисляем состояния для отображения
+    const hasCompletedSession = Boolean(existingSession?.completedAt);
+    const canRetake = Boolean(testData?.allowRetake);
+    const isViewResult = hasCompletedSession && !canRetake;
+
     // Use Telegram MainButton
     useMainButton({
-        text: existingSession?.completedAt && !testData?.allowRetake
+        text: isViewResult
             ? 'Посмотреть результат'
             : testData?.welcomeScreen?.buttonText || 'Начать',
-        onClick: existingSession?.completedAt && !testData?.allowRetake ? handleViewResult : handleStart,
-        options: { enabled: !!testData && !isTestLoading }
+        onClick: isViewResult ? handleViewResult : handleStart,
+        options: { enabled: Boolean(testData) && !isTestLoading },
     });
+
+    if (isTestLoading) {
+        return <WelcomePageView.Skeleton />;
+    }
+
+    if (testError || !testData) {
+        return <WelcomePageView.Error />;
+    }
 
     return (
         <WelcomePageView
-            test={testData || null}
-            existingSession={existingSession || null}
-            isLoading={isTestLoading}
-            error={testError}
-            isStarting={startTestMutation.isPending}
-            onStart={handleStart}
+            testType={testData.type}
+            title={testData.welcomeScreen?.title ?? 'Тест'}
+            description={testData.welcomeScreen?.description ?? undefined}
+            coverImageUrl={testData.welcomeScreen?.imageUrl ?? undefined}
+            questionsCount={testData.questionsCount}
+            canRetake={canRetake}
+            hasCompletedSession={hasCompletedSession}
             onViewResult={handleViewResult}
         />
     );

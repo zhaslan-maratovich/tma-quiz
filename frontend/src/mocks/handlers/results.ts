@@ -64,7 +64,8 @@ export const resultsHandlers = [
                 foundResult = {
                     ...result,
                     title: body.title ?? result.title,
-                    description: body.description !== undefined ? body.description : result.description,
+                    description:
+                        body.description !== undefined ? body.description : result.description,
                     imageUrl: body.imageUrl !== undefined ? body.imageUrl : result.imageUrl,
                 };
                 test.results[resultIndex] = foundResult;

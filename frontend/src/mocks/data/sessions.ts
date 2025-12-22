@@ -61,7 +61,7 @@ export function getSessionByUserAndTest(userId: string, testId: string): UserSes
         console.log('[MSW Sessions] Checking session:', session.id, {
             sessionUserId: session.userId,
             sessionTestId: session.testId,
-            completedAt: session.completedAt
+            completedAt: session.completedAt,
         });
         if (session.userId === userId && session.testId === testId) {
             console.log('[MSW Sessions] Found matching session:', session.id);
