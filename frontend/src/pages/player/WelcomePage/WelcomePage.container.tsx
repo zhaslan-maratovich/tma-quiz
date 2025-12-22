@@ -39,26 +39,27 @@ export function WelcomePage() {
         }
     }, [testData, slug, setTest, loadProgress]);
 
-    // Навигация после успешного старта теста
-    useEffect(() => {
-        if (startTestMutation.isSuccess && startTestMutation.data?.sessionId && !isNavigatingRef.current) {
-            isNavigatingRef.current = true;
-            startTest();
-            haptic.notification('success');
-            // Используем setTimeout для гарантии что навигация произойдёт после рендера
-            setTimeout(() => {
-                navigate(`/play/${slug}/question`, { replace: true });
-            }, 0);
-        }
-    }, [startTestMutation.isSuccess, startTestMutation.data, startTest, haptic, navigate, slug]);
-
     const handleStart = () => {
         if (startTestMutation.isPending || isNavigatingRef.current) return;
+
+        isNavigatingRef.current = true;
         haptic.impact('medium');
+
         startTestMutation.mutate(undefined, {
+            onSuccess: (result) => {
+                if (result.sessionId) {
+                    startTest();
+                    haptic.notification('success');
+                    // Прямая навигация в onSuccess - без invalidateQueries в мутации
+                    navigate(`/play/${slug}/question`, { replace: true });
+                } else {
+                    isNavigatingRef.current = false;
+                }
+            },
             onError: (error) => {
                 console.error('Start test error:', error);
                 haptic.notification('error');
+                isNavigatingRef.current = false;
             },
         });
     };
@@ -80,7 +81,7 @@ export function WelcomePage() {
             ? 'Посмотреть результат'
             : testData?.welcomeScreen?.buttonText || 'Начать',
         onClick: isViewResult ? handleViewResult : handleStart,
-        options: { enabled: Boolean(testData) && !isTestLoading },
+        options: { enabled: Boolean(testData) && !isTestLoading && !startTestMutation.isPending },
     });
 
     if (isTestLoading) {

@@ -46,18 +46,12 @@ export function usePlaySessionQuery(slug: string | undefined) {
 
 /**
  * Mutation: Начало прохождения теста
+ * НЕ инвалидируем сессию здесь - навигация на QuestionPage произойдёт сразу после успеха
  */
-export function useStartTestMutation(slug: string | undefined) {
-    const queryClient = useQueryClient();
-
+export function useStartTestMutation(_slug: string | undefined) {
     return useMutation({
-        mutationFn: () => playApi.startTest(slug!),
-        onSuccess: () => {
-            // Инвалидируем сессию, чтобы перезапросить при необходимости
-            if (slug) {
-                queryClient.invalidateQueries({ queryKey: playQueryKeys.session(slug) });
-            }
-        },
+        mutationFn: () => playApi.startTest(_slug!),
+        // Не делаем invalidateQueries - это вызывает ре-рендер который мешает навигации
     });
 }
 
