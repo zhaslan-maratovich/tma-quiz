@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
+import { hideMainButton } from '@/lib/telegram';
 import {
     useMainButton,
     useHaptic,
@@ -28,7 +29,7 @@ export function WelcomePage() {
     // Мутация для начала теста
     const startTestMutation = useStartTestMutation(slug);
 
-    // Флаг для предотвращения двойной навигации (ref + state для ререндера)
+    // Флаг для предотвращения двойной навигации
     const isNavigatingRef = useRef(false);
     const [isNavigating, setIsNavigating] = useState(false);
 
@@ -44,7 +45,11 @@ export function WelcomePage() {
         if (startTestMutation.isPending || isNavigatingRef.current) return;
 
         isNavigatingRef.current = true;
-        setIsNavigating(true); // Вызовет ререндер и отключит MainButton
+        setIsNavigating(true);
+
+        // Немедленно скрываем MainButton чтобы он не мешал
+        hideMainButton();
+
         haptic.impact('medium');
 
         startTestMutation.mutate(undefined, {
@@ -57,8 +62,8 @@ export function WelcomePage() {
                     const targetUrl = `/play/${slug}/question`;
                     console.log('[WelcomePage] Navigating to:', targetUrl);
 
-                    navigate(targetUrl, { replace: true });
-                    console.log('[WelcomePage] navigate() called');
+                    // Используем window.location для гарантированной навигации
+                    window.location.href = targetUrl;
                 } else {
                     console.warn('[WelcomePage] No sessionId in result');
                     isNavigatingRef.current = false;
