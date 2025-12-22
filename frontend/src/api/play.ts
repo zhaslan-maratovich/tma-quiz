@@ -3,7 +3,7 @@
  */
 
 import { api } from './client';
-import type { PlayTest, UserSession, SubmitAnswersInput } from '@/types';
+import type { PlayTest, SessionResponse, UserSession, SubmitAnswersInput } from '@/types';
 
 /**
  * Получить тест для прохождения
@@ -14,9 +14,10 @@ export async function getTestBySlug(slug: string): Promise<PlayTest> {
 
 /**
  * Проверить существующую сессию
+ * Backend возвращает { completed, canRetake, session }
  */
-export async function getExistingSession(slug: string): Promise<UserSession | null> {
-    return api.get<UserSession | null>(`/api/play/${slug}/session`);
+export async function getExistingSession(slug: string): Promise<SessionResponse> {
+    return api.get<SessionResponse>(`/api/play/${slug}/session`);
 }
 
 /**

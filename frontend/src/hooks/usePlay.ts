@@ -71,8 +71,12 @@ export function useSubmitAnswersMutation(slug: string | undefined) {
         mutationFn: (data: SubmitAnswersInput) => playApi.submitAnswers(slug!, data),
         onSuccess: (session) => {
             if (slug) {
-                // Обновляем кэш сессии с новыми данными
-                queryClient.setQueryData(playQueryKeys.session(slug), session);
+                // Обновляем кэш сессии с новыми данными в формате SessionResponse
+                queryClient.setQueryData(playQueryKeys.session(slug), {
+                    completed: true,
+                    canRetake: false,
+                    session,
+                });
             }
         },
     });

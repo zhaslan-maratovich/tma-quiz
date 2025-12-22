@@ -23,7 +23,7 @@ export function WelcomePage() {
 
     // Используем централизованные хуки для запросов
     const { data: testData, isLoading: isTestLoading, error: testError } = usePlayTestQuery(slug);
-    const { data: existingSession } = usePlaySessionQuery(slug);
+    const { data: sessionResponse } = usePlaySessionQuery(slug);
 
     // Мутация для начала теста
     const startTestMutation = useStartTestMutation(slug);
@@ -59,8 +59,9 @@ export function WelcomePage() {
     };
 
     // Вычисляем состояния для отображения
-    const hasCompletedSession = Boolean(existingSession?.completedAt);
-    const canRetake = Boolean(testData?.allowRetake);
+    // Backend возвращает { completed, canRetake, session }
+    const hasCompletedSession = sessionResponse?.completed ?? false;
+    const canRetake = sessionResponse?.canRetake ?? testData?.allowRetake ?? false;
     const isViewResult = hasCompletedSession && !canRetake;
 
     // Use Telegram MainButton

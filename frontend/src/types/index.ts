@@ -134,6 +134,15 @@ export interface UserSession {
     answers?: UserAnswerRecord[];
 }
 
+/**
+ * Ответ API для /play/:slug/session
+ */
+export interface SessionResponse {
+    completed: boolean;
+    canRetake: boolean;
+    session: UserSession | null;
+}
+
 export interface UserAnswerRecord {
     questionId: string;
     answerId: string;

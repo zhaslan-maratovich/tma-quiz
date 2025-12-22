@@ -10,7 +10,7 @@ import {
     completeSession,
     mockSessions,
 } from '../data/sessions';
-import type { ApiResponse, PlayTest, UserSession, SubmitAnswersInput, Test } from '@/types';
+import type { ApiResponse, PlayTest, UserSession, SessionResponse, SubmitAnswersInput, Test } from '@/types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -131,6 +131,7 @@ export const playHandlers = [
 
     /**
      * GET /api/play/:slug/session - Проверить существующую сессию
+     * Возвращает формат: { completed, canRetake, session }
      */
     http.get(`${API_URL}/api/play/:slug/session`, ({ params }) => {
         const { slug } = params;
@@ -173,22 +174,55 @@ export const playHandlers = [
                 };
             });
 
-            const response: ApiResponse<UserSession> = {
+            const sessionWithDetails: UserSession = {
+                ...session,
+                result: result || null,
+                answers: answersWithDetails || session.answers,
+            };
+
+            const response: ApiResponse<SessionResponse> = {
                 success: true,
                 data: {
-                    ...session,
-                    result: result || null,
-                    answers: answersWithDetails || session.answers,
+                    completed: true,
+                    canRetake: test.allowRetake,
+                    session: sessionWithDetails,
                 },
             };
 
             return HttpResponse.json(response, { status: 200 });
         }
 
-        // Сессии нет или она не завершена
-        const response: ApiResponse<null> = {
+        // Если есть незавершённая сессия
+        if (session) {
+            const response: ApiResponse<SessionResponse> = {
+                success: true,
+                data: {
+                    completed: false,
+                    canRetake: false,
+                    session: {
+                        id: session.id,
+                        userId: session.userId,
+                        testId: session.testId,
+                        resultId: null,
+                        score: null,
+                        maxScore: null,
+                        startedAt: session.startedAt,
+                        completedAt: null,
+                    },
+                },
+            };
+
+            return HttpResponse.json(response, { status: 200 });
+        }
+
+        // Сессии нет
+        const response: ApiResponse<SessionResponse> = {
             success: true,
-            data: null,
+            data: {
+                completed: false,
+                canRetake: test.allowRetake,
+                session: null,
+            },
         };
 
         return HttpResponse.json(response, { status: 200 });

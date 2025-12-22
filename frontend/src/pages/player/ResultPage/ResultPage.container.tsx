@@ -16,10 +16,13 @@ export function ResultPage() {
     const { reset, clearProgress } = usePlayStore();
 
     // Используем централизованные хуки для запросов
-    const { data: session, isLoading } = usePlaySessionQuery(slug);
+    // sessionResponse имеет формат { completed, canRetake, session }
+    const { data: sessionResponse, isLoading } = usePlaySessionQuery(slug);
     const { data: test } = usePlayTestQuery(slug);
 
-    const canRetake = test?.allowRetake ?? false;
+    // Извлекаем session из ответа API
+    const session = sessionResponse?.session ?? null;
+    const canRetake = sessionResponse?.canRetake ?? test?.allowRetake ?? false;
 
     const handleShare = async () => {
         haptic.impact('medium');
@@ -63,7 +66,7 @@ export function ResultPage() {
     return (
         <ResultPageView
             test={test || null}
-            session={session || null}
+            session={session}
             isLoading={isLoading}
             canRetake={canRetake}
             onShare={handleShare}
