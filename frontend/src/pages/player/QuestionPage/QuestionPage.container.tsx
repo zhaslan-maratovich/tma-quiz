@@ -27,6 +27,7 @@ export function QuestionPage() {
         canGoPrevious,
         getProgress,
         saveProgress,
+        loadProgress,
         completeTest,
     } = usePlayStore();
 
@@ -40,13 +41,16 @@ export function QuestionPage() {
         currentQuestionIndex,
     });
 
-    // Синхронизируем тест в store когда он загружен
+    // Синхронизируем тест в store и загружаем прогресс
     useEffect(() => {
         if (testData && !test) {
             console.log('[QuestionPage] Setting test from query to store');
             setTest(testData);
         }
-    }, [testData, test, setTest]);
+        if (testData && slug) {
+            loadProgress(slug);
+        }
+    }, [testData, test, slug, setTest, loadProgress]);
 
     // Используем тест из store или из query
     const activeTest = test ?? testData;

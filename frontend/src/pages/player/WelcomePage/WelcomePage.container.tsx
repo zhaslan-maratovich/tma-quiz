@@ -1,8 +1,11 @@
 /**
  * WelcomePage Container - компонент с логикой
+ *
+ * Ответственность: показать приветственный экран теста и обработать начало теста.
+ * НЕ отвечает за: подготовку данных для QuestionPage (это делает сам QuestionPage).
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePlayStore } from '@/stores/playStore';
 import { hideMainButton } from '@/lib/telegram';
@@ -20,9 +23,9 @@ export function WelcomePage() {
     const navigate = useNavigate();
     const haptic = useHaptic();
 
-    const { setTest, startTest, loadProgress } = usePlayStore();
+    const { startTest } = usePlayStore();
 
-    // Используем централизованные хуки для запросов
+    // Загрузка данных о тесте и сессии
     const { data: testData, isLoading: isTestLoading, error: testError } = usePlayTestQuery(slug);
     const { data: sessionResponse } = usePlaySessionQuery(slug);
 
@@ -33,23 +36,17 @@ export function WelcomePage() {
     const isNavigatingRef = useRef(false);
     const [isNavigating, setIsNavigating] = useState(false);
 
-    // Load saved progress when test data is available
-    useEffect(() => {
-        if (testData && slug) {
-            setTest(testData);
-            loadProgress(slug);
-        }
-    }, [testData, slug, setTest, loadProgress]);
+    // Вычисляем состояния для отображения
+    const hasCompletedSession = sessionResponse?.completed ?? false;
+    const canRetake = sessionResponse?.canRetake ?? testData?.allowRetake ?? false;
+    const isViewResult = hasCompletedSession && !canRetake;
 
     const handleStart = () => {
         if (startTestMutation.isPending || isNavigatingRef.current) return;
 
         isNavigatingRef.current = true;
         setIsNavigating(true);
-
-        // Немедленно скрываем MainButton чтобы он не мешал
         hideMainButton();
-
         haptic.impact('medium');
 
         startTestMutation.mutate(undefined, {
@@ -58,12 +55,7 @@ export function WelcomePage() {
                 if (result.sessionId) {
                     startTest();
                     haptic.notification('success');
-
-                    const targetUrl = `/play/${slug}/question`;
-                    console.log('[WelcomePage] Navigating to:', targetUrl);
-
-                    // Используем window.location для гарантированной навигации
-                    window.location.href = targetUrl;
+                    navigate(`/play/${slug}/question`, { replace: true });
                 } else {
                     console.warn('[WelcomePage] No sessionId in result');
                     isNavigatingRef.current = false;
@@ -84,13 +76,7 @@ export function WelcomePage() {
         navigate(`/play/${slug}/result`);
     };
 
-    // Вычисляем состояния для отображения
-    // Backend возвращает { completed, canRetake, session }
-    const hasCompletedSession = sessionResponse?.completed ?? false;
-    const canRetake = sessionResponse?.canRetake ?? testData?.allowRetake ?? false;
-    const isViewResult = hasCompletedSession && !canRetake;
-
-    // Use Telegram MainButton - отключаем при навигации
+    // Telegram MainButton
     useMainButton({
         text: isViewResult
             ? 'Посмотреть результат'
