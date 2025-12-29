@@ -36,6 +36,8 @@ const queryClient = new QueryClient({
 
 /**
  * StartParamRedirect - Обрабатывает startapp параметр из Telegram
+ * Проверяем startapp только один раз при монтировании.
+ * Если редирект произошёл, очищаем URL от query параметров.
  */
 function StartParamRedirect() {
     const navigate = useNavigate();
@@ -45,8 +47,14 @@ function StartParamRedirect() {
         if (startParam) {
             // Если есть start_param, это slug теста - редиректим на страницу прохождения
             navigate(`/play/${startParam}`, { replace: true });
+
+            // Очищаем URL от startapp параметра чтобы избежать повторных редиректов
+            if (window.location.search) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
         }
-    }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Только при монтировании!
 
     return null;
 }
